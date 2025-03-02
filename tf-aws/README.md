@@ -33,7 +33,9 @@ terraform destroy
 
 ## TODO:
 - [ ] Create database subnet
+- [ ] Create IGW, Nat GW
 - [ ] Add dynamodb into database subnet
 - [ ] Create RDS instance
 - [ ] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
+- [ ] Create MSK
