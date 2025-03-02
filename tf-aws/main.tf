@@ -1,4 +1,4 @@
-variable "region" {}
+variable "az" {}
 
 terraform {
   required_providers {
@@ -16,12 +16,13 @@ terraform {
 }
 
 provider "aws" {
-  region = var.region
+  region = var.az
 }
 
 module "vpc" {
   source   = "./modules/vpc"
   vpc_cidr = "10.0.0.0/16"
+  az     = var.az
 }
 
 module "dynamodb" {
