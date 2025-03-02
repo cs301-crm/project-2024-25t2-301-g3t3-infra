@@ -32,9 +32,9 @@ terraform destroy
 
 
 ## TODO:
-- [ ] Create database subnet
-- [ ] Create IGW, Nat GW
-- [ ] Add dynamodb into database subnet
+- [x] Create database subnet
+- [x] Create IGW, Nat GW
+- [ ] Add dynamodb into database subnet -> DynamoDB is fully managed, so actly no need to add it into the subnet oops
 - [ ] Create RDS instance
 - [ ] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
