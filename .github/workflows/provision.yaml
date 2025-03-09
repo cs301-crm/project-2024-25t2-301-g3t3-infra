@@ -58,9 +58,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fmtOutcome = `${{ steps.fmt.outcome }}`;
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            const fmtMessage = fmtOutcome === "failure" ? `🚨 **Terraform Format failed!**\nPlease run \`terraform fmt -recursive\` and push the changes.` : "";
+            const fmtOutcome = "${{ steps.fmt.outcome }}";
+            const fmtMessage = fmtOutcome === "failure" ? "🚨 **Terraform Format failed!**\nPlease run `terraform fmt -recursive` and push the changes." : "";
+            
+            const output = `#### Terraform Format and Style 🖌\`${fmtOutcome}\`
+            ${fmtMessage}
             
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
