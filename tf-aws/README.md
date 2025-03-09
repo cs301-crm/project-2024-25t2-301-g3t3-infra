@@ -42,5 +42,4 @@ terraform destroy
 - [ ] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
 - [ ] Create MSK
-- [ ] Create Aurora
 - [ ] Create SFTP server
