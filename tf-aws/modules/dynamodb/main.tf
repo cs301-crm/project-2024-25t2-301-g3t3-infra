@@ -6,7 +6,8 @@ resource "aws_dynamodb_table" "main" {
   billing_mode = var.billing_mode
   hash_key     = "id"
 
-  attribute {name = "id"
+  attribute {
+          name = "id"
     type = "S"
   }
 
