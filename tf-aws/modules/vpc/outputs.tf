@@ -7,5 +7,5 @@ output "database_subnet_ids" {
 }
 
 output "application_subnet_ids" {
-    value = [aws_subnet.application.id]
+  value = [aws_subnet.application.id]
 }
