@@ -12,6 +12,9 @@ jobs:
     permissions:
       id-token: write # Permission for GA to get AWS OIDC connection
       contents: read # Permission for GA to check out repository
+    defaults:
+      run:
+        working-directory: ./tf-aws
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
