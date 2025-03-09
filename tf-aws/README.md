@@ -32,10 +32,15 @@ terraform destroy
 
 
 ## TODO:
-- [x] Create database subnet
-- [x] Create IGW, Nat GW
-- [ ] Add dynamodb into database subnet -> DynamoDB is fully managed, so actly no need to add it into the subnet oops
+- [x] Create VPC
+- [x] Create firewall subnet, public subnet, application subnet, database subnet
+- [x] Create IGW, NAT GW, Elastic IP
+- [ ] Configure route table and SG for each subnet
+- [x] Create Dynamodb
+- [x] ~~Add dynamodb into database subnet~~ -> DynamoDB is fully managed, so actly no need to add it into the subnet oops
 - [ ] Create RDS instance
 - [ ] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
 - [ ] Create MSK
+- [ ] Create Aurora
+- [ ] Create SFTP server
