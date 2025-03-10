@@ -86,3 +86,5 @@ tags
 
 # MacOS
 .DS_Store
+
+/.idea
