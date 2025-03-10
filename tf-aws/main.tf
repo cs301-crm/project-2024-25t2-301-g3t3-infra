@@ -26,8 +26,18 @@ module "vpc" {
   az       = var.az
 }
 
+module "kms" {
+  source = "./modules/kms"
+}
+
 module "dynamodb" {
   source       = "./modules/dynamodb"
   billing_mode = "PAY_PER_REQUEST"
   table_name   = "business_transactions_table"
+}
+
+module "rds-aurora" {
+  source              = "./modules/rds-aurora"
+  database_subnet_ids = module.vpc.database_subnet_ids
+  aurora_kms_key_id   = module.kms.aurora_kms_key_id
 }
