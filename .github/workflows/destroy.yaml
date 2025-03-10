@@ -1,0 +1,37 @@
+name: Destroy Infra
+
+on:
+  workflow_dispatch:
+
+env:
+  TF_LOG: INFO
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Permission for GA to get AWS OIDC connection
+      contents: read # Permission for GA to check out repository
+    defaults:
+      run:
+        working-directory: ./tf-aws
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: terraform init
+        id: init
+        run: terraform init
+
+      - name: terraform destroy
+        id: destroy
+        run: terraform destroy -auto-approve
