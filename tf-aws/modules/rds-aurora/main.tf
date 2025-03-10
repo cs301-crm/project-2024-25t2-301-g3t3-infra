@@ -3,8 +3,7 @@ variable "aurora_kms_key_id" {}
 
 resource "aws_rds_cluster" "main" {
   cluster_identifier      = "aurora-cluster"
-  engine                  = "aurora-mysql"
-  engine_version          = "5.7.mysql_aurora.2.03.2"
+  engine                  = "aurora-postgresql"
   availability_zones      = ["ap-southeast-1a", "ap-southeast-1b"]
   database_name           = "user_db"
   manage_master_user_password   = true
