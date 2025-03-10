@@ -26,6 +26,11 @@ module "vpc" {
   az       = var.az
 }
 
+module "iam" {
+  source     = "./modules/iam"
+  bucket_arn = module.s3.bucket_arn
+}
+
 module "kms" {
   source = "./modules/kms"
 }
@@ -40,4 +45,14 @@ module "rds-aurora" {
   source              = "./modules/rds-aurora"
   database_subnet_ids = module.vpc.database_subnet_ids
   aurora_kms_key_id   = module.kms.aurora_kms_key_id
+}
+
+module "s3" {
+  source = "./modules/s3"
+}
+
+module "aws_transfer_family" {
+  source             = "./modules/aws_transfer_family"
+  sftp_user_role_arn = module.iam.sftp_user_role_arn
+  bucket_name        = module.s3.bucket_name
 }
