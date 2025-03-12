@@ -1,6 +1,6 @@
-variable process_monetary_transactions_lambda_role_arn {}
-variable process_monetary_transactions_lambda_filename {}
-variable sftp_bucket_arn {}
+variable "process_monetary_transactions_lambda_role_arn" {}
+variable "process_monetary_transactions_lambda_filename" {}
+variable "sftp_bucket_arn" {}
 
 resource "aws_lambda_function" "process_monetary_transactions" {
   function_name = "process_monetary_transactions"

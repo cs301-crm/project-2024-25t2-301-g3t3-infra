@@ -82,7 +82,7 @@ resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
         Effect = "Allow"
         Action = [
           "rds-db:connect",
-         ]
+        ]
         Resource = [
           "${var.user_aurora_arn}"
         ]
