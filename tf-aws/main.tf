@@ -28,7 +28,8 @@ module "vpc" {
 
 module "iam" {
   source     = "./modules/iam"
-  bucket_arn = module.s3.bucket_arn
+  sftp_bucket_arn = module.s3.sftp_bucket_arn
+  user_aurora_arn = module.rds-aurora.user_aurora_arn
 }
 
 module "kms" {
@@ -51,8 +52,15 @@ module "s3" {
   source = "./modules/s3"
 }
 
-module "aws_transfer_family" {
-  source             = "./modules/aws_transfer_family"
-  sftp_user_role_arn = module.iam.sftp_user_role_arn
-  bucket_name        = module.s3.bucket_name
+module "transfer_family" {
+  source                  = "./modules/transfer_family"
+  sftp_user_role_arn      = module.iam.sftp_user_role_arn
+  sftp_transaction_bucket_name = module.s3.sftp_bucket_name
+}
+
+module "lambda" {
+  source                                        = "./modules/lambda"
+  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+  sftp_bucket_arn              = module.s3.sftp_bucket_arn
+  process_monetary_transactions_lambda_filename = "<path-to-lambda>"
 }

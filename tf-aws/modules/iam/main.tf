@@ -1,5 +1,7 @@
-variable "bucket_arn" {}
+variable "sftp_bucket_arn" {}
+variable "user_aurora_arn" {}
 
+# IAM for Transfer Family user
 resource "aws_iam_role" "sftp_user_role" {
   name = "sftp_user_role"
 
@@ -33,14 +35,67 @@ resource "aws_iam_role_policy" "sftp_user_policy" {
           "s3:DeleteObject"
         ]
         Resource = [
-          var.bucket_arn,
-          "${var.bucket_arn}/*"
+          var.sftp_bucket_arn,
+          "${var.sftp_bucket_arn}/*"
         ]
       }
     ]
   })
 }
 
-output "sftp_user_role_arn" {
-  value = aws_iam_role.sftp_user_role.arn
+# IAM for writing into user table in RDS
+resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
+  name = "process_monetary_transactions_lambda_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
+  name = "process_monetary_transactions_lambda_policy"
+  role = aws_iam_role.process_monetary_transactions_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.sftp_bucket_arn,
+          "${var.sftp_bucket_arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "rds-db:connect",
+         ]
+        Resource = [
+          "${var.user_aurora_arn}"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
