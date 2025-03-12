@@ -31,10 +31,17 @@ resource "aws_subnet" "application" {
   map_public_ip_on_launch = false
 }
 
-resource "aws_subnet" "database" {
+resource "aws_subnet" "database_1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.3.0/24"
-  availability_zone       = var.az
+  availability_zone       = "ap-southeast-1a"
+  map_public_ip_on_launch = false
+}
+
+resource "aws_subnet" "database_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = "ap-southeast-1b"
   map_public_ip_on_launch = false
 }
 
@@ -84,8 +91,13 @@ resource "aws_route_table_association" "application" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_route_table_association" "database" {
-  subnet_id      = aws_subnet.database.id
+resource "aws_route_table_association" "database_1" {
+  subnet_id      = aws_subnet.database_1.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "database_2" {
+  subnet_id      = aws_subnet.database_2.id
   route_table_id = aws_route_table.private.id
 }
 
@@ -104,7 +116,12 @@ resource "aws_network_acl" "database" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_network_acl_association" "database" {
+resource "aws_network_acl_association" "database_1" {
   network_acl_id = aws_network_acl.database.id
-  subnet_id      = aws_subnet.database.id
+  subnet_id      = aws_subnet.database_1.id
+}
+
+resource "aws_network_acl_association" "database_2" {
+  network_acl_id = aws_network_acl.database.id
+  subnet_id      = aws_subnet.database_2.id
 }
