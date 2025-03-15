@@ -38,7 +38,7 @@ terraform destroy
 - [ ] Configure route table and SG for each subnet
 - [x] Create Dynamodb
 - [x] ~~Add dynamodb into database subnet~~ -> DynamoDB is fully managed, so actly no need to add it into the subnet oops
-- [ ] Create RDS instance
+- [x] Create RDS instance
 - [ ] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
 - [ ] Create MSK

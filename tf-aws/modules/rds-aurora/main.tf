@@ -24,7 +24,7 @@ resource "aws_rds_cluster_instance" "main" {
   count               = 2
   identifier          = "aurora-cluster-${count.index}"
   cluster_identifier  = aws_rds_cluster.main.id
-  instance_class      = "db.t4g.medium"
+  instance_class      = "db.t4g.micro"
   engine              = aws_rds_cluster.main.engine
   engine_version      = aws_rds_cluster.main.engine_version
   publicly_accessible = false
