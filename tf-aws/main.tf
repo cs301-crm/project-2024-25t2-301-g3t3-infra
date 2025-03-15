@@ -46,6 +46,7 @@ module "rds-aurora" {
   source              = "./modules/rds-aurora"
   database_subnet_ids = module.vpc.database_subnet_ids
   aurora_kms_key_id   = module.kms.aurora_kms_key_id
+  rds_sg_id           = module.vpc.rds_sg_id
 }
 
 module "s3" {
@@ -58,9 +59,11 @@ module "transfer_family" {
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
 }
 
-module "lambda" {
-  source                                        = "./modules/lambda"
+module "lambda_process_monetary_transactions" {
+  source                                        = "./modules/lambda_process_monetary_transactions"
   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
   process_monetary_transactions_lambda_filename = "<path-to-lambda>"
+  database_subnet_ids                           = module.vpc.database_subnet_ids
+  lambda_sg_id                                  = module.vpc.lambda_sg_id
 }
