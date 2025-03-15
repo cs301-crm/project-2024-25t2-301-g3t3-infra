@@ -4,7 +4,6 @@ variable "az" {}
 # VPC
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
-
   enable_dns_support   = true
   enable_dns_hostnames = true
 }
@@ -15,6 +14,9 @@ resource "aws_subnet" "firewall" {
   cidr_block              = "10.0.0.0/24"
   availability_zone       = var.az
   map_public_ip_on_launch = false
+  tags = {
+    Name = "firewall"
+  }
 }
 
 resource "aws_subnet" "public" {
@@ -22,6 +24,9 @@ resource "aws_subnet" "public" {
   cidr_block              = "10.0.1.0/24"
   availability_zone       = var.az
   map_public_ip_on_launch = true
+  tags = {
+    Name = "public"
+  }
 }
 
 resource "aws_subnet" "application" {
@@ -29,6 +34,10 @@ resource "aws_subnet" "application" {
   cidr_block              = "10.0.2.0/24"
   availability_zone       = var.az
   map_public_ip_on_launch = false
+
+  tags = {
+    Name = "application"
+  }
 }
 
 resource "aws_subnet" "database_1" {
@@ -36,6 +45,9 @@ resource "aws_subnet" "database_1" {
   cidr_block              = "10.0.3.0/24"
   availability_zone       = "ap-southeast-1a"
   map_public_ip_on_launch = false
+  tags = {
+    Name = "database_1"
+  }
 }
 
 resource "aws_subnet" "database_2" {
@@ -43,6 +55,9 @@ resource "aws_subnet" "database_2" {
   cidr_block              = "10.0.4.0/24"
   availability_zone       = "ap-southeast-1b"
   map_public_ip_on_launch = false
+  tags = {
+    Name = "database_2"
+  }
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -62,12 +77,15 @@ resource "aws_nat_gateway" "nat" {
 # VPC routing table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-}
 
-resource "aws_route" "public_internet_access" {
-  route_table_id         = aws_route_table.public.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "public"
+  }
 }
 
 resource "aws_route_table_association" "public" {
@@ -78,12 +96,11 @@ resource "aws_route_table_association" "public" {
 # Private Route Table
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-}
 
-resource "aws_route" "private_nat_access" {
-  route_table_id         = aws_route_table.private.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
 }
 
 resource "aws_route_table_association" "application" {
@@ -126,6 +143,30 @@ resource "aws_network_acl_association" "database_2" {
   subnet_id      = aws_subnet.database_2.id
 }
 
+# Allow inbound PostgreSQL traffic from public subnet
+resource "aws_network_acl_rule" "database_inbound" {
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 100
+  protocol       = "tcp"
+  rule_action    = "allow"
+  egress         = false
+  cidr_block     = "10.0.1.0/24" # Restrict to public subnet
+  from_port      = 5432
+  to_port        = 5432
+}
+
+# Allow all outbound traffic (for response handling)
+resource "aws_network_acl_rule" "database_outbound" {
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 101
+  protocol       = "-1"
+  rule_action    = "allow"
+  egress         = true
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 0
+  to_port        = 0
+}
+
 # Security Group
 resource "aws_security_group" "rds_sg" {
   name        = "rds-security-group"
@@ -133,12 +174,20 @@ resource "aws_security_group" "rds_sg" {
   vpc_id      = aws_vpc.main.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_lambda_access" {
+resource "aws_vpc_security_group_ingress_rule" "allow_bastion_access" {
   security_group_id = aws_security_group.rds_sg.id
-  cidr_ipv4         = aws_subnet.application.cidr_block
+  cidr_ipv4         = "10.0.1.0/24" # Public subnet CIDR
+  ip_protocol       = "tcp"
   from_port         = 5432
   to_port           = 5432
-  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_lambda_access" {
+  security_group_id = aws_security_group.rds_sg.id
+  referenced_security_group_id = aws_security_group.rds_sg.id 
+  ip_protocol       = "-1"
+  # cidr_ipv4 = aws_subnet.application.cidr_block
+  # ip_protocol       = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" {
@@ -155,7 +204,7 @@ resource "aws_security_group" "lambda_sg" {
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_rds1" { // send data to clientdb
   security_group_id = aws_security_group.lambda_sg.id
-  cidr_ipv4         = aws_subnet.database_1.cidr_block
+  cidr_ipv4 = aws_subnet.database_1.cidr_block
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
@@ -163,7 +212,7 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_rds1" { // send data to
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_rds2" { // send data to clientdb
   security_group_id = aws_security_group.lambda_sg.id
-  cidr_ipv4         = aws_subnet.database_2.cidr_block
+  cidr_ipv4 = aws_subnet.database_2.cidr_block
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"

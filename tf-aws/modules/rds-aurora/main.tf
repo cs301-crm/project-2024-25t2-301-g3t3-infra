@@ -10,24 +10,30 @@ resource "aws_rds_cluster" "main" {
   manage_master_user_password   = true
   master_username               = "test"
   master_user_secret_kms_key_id = var.aurora_kms_key_id
-  skip_final_snapshot           = true
-  backup_retention_period       = 0
-  # backup_retention_period = 5 # uncomment if skip_final_snapshot is false
-  # preferred_backup_window = "07:00-09:00" # uncomment if skip_final_snapshot is false
+  skip_final_snapshot           = false
+  final_snapshot_identifier = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
+  snapshot_identifier = "main-rds-cluster" # TODO: change this number to the snapshot identifier name
+  backup_retention_period = 5 # days
+  preferred_backup_window = "07:00-09:00"
   apply_immediately      = true
   db_subnet_group_name   = aws_db_subnet_group.aurora.name
   storage_encrypted      = true
   vpc_security_group_ids = [var.rds_sg_id]
+  lifecycle {
+    ignore_changes = [ 
+      final_snapshot_identifier,
+     ]
+  }
 }
 
 resource "aws_rds_cluster_instance" "main" {
   count               = 2
   identifier          = "aurora-cluster-${count.index}"
   cluster_identifier  = aws_rds_cluster.main.id
-  instance_class      = "db.t4g.micro"
+  instance_class      = "db.t4g.medium"
   engine              = aws_rds_cluster.main.engine
   engine_version      = aws_rds_cluster.main.engine_version
-  publicly_accessible = false
+  publicly_accessible = true
 }
 
 resource "aws_db_subnet_group" "aurora" {
