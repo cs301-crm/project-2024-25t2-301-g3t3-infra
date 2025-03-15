@@ -14,9 +14,9 @@ resource "aws_rds_cluster" "main" {
   backup_retention_period       = 0
   # backup_retention_period = 5 # uncomment if skip_final_snapshot is false
   # preferred_backup_window = "07:00-09:00" # uncomment if skip_final_snapshot is false
-  apply_immediately    = true
-  db_subnet_group_name = aws_db_subnet_group.aurora.name
-  storage_encrypted    = true
+  apply_immediately      = true
+  db_subnet_group_name   = aws_db_subnet_group.aurora.name
+  storage_encrypted      = true
   vpc_security_group_ids = [var.rds_sg_id]
 }
 

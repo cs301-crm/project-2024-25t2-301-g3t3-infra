@@ -11,7 +11,7 @@ resource "aws_lambda_function" "process_monetary_transactions" {
   runtime       = "python3.8"
   filename      = var.process_monetary_transactions_lambda_filename
   vpc_config {
-    subnet_ids = var.database_subnet_ids
+    subnet_ids         = var.database_subnet_ids
     security_group_ids = [var.lambda_sg_id]
   }
 }
