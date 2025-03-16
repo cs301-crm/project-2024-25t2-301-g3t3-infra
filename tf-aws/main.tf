@@ -63,7 +63,13 @@ module "lambda_process_monetary_transactions" {
   source                                        = "./modules/lambda_process_monetary_transactions"
   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  process_monetary_transactions_lambda_filename = "<path-to-lambda>"
+  lambda_path                                   = "../../project-2024-25t2-301-g3t3-lambda"
   database_subnet_ids                           = module.vpc.database_subnet_ids
   lambda_sg_id                                  = module.vpc.lambda_sg_id
+}
+
+module "bastion_ec2" {
+  source           = "./modules/bastion_ec2"
+  public_subnet_id = module.vpc.public_subnet_id
+  bastion_sg       = module.vpc.bastion_sg_id
 }

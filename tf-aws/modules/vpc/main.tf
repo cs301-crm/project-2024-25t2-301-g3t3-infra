@@ -3,7 +3,7 @@ variable "az" {}
 
 # VPC
 resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 }
@@ -183,9 +183,9 @@ resource "aws_vpc_security_group_ingress_rule" "allow_bastion_access" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_lambda_access" {
-  security_group_id = aws_security_group.rds_sg.id
-  referenced_security_group_id = aws_security_group.rds_sg.id 
-  ip_protocol       = "-1"
+  security_group_id            = aws_security_group.rds_sg.id
+  referenced_security_group_id = aws_security_group.rds_sg.id
+  ip_protocol                  = "-1"
   # cidr_ipv4 = aws_subnet.application.cidr_block
   # ip_protocol       = "tcp"
 }
@@ -204,7 +204,7 @@ resource "aws_security_group" "lambda_sg" {
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_rds1" { // send data to clientdb
   security_group_id = aws_security_group.lambda_sg.id
-  cidr_ipv4 = aws_subnet.database_1.cidr_block
+  cidr_ipv4         = aws_subnet.database_1.cidr_block
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
@@ -212,7 +212,7 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_rds1" { // send data to
 
 resource "aws_vpc_security_group_egress_rule" "lambda_to_rds2" { // send data to clientdb
   security_group_id = aws_security_group.lambda_sg.id
-  cidr_ipv4 = aws_subnet.database_2.cidr_block
+  cidr_ipv4         = aws_subnet.database_2.cidr_block
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
@@ -232,4 +232,25 @@ resource "aws_vpc_security_group_ingress_rule" "lambda_to_rds" {
   ip_protocol       = "tcp"
   from_port         = 5432
   to_port           = 5432
+}
+
+resource "aws_security_group" "bastion" {
+  name        = "bastion-sg"
+  description = "Allow SSH access to bastion host"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "SSH from all"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Replace with your public IP
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
