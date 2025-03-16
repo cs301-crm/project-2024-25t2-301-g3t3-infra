@@ -27,9 +27,11 @@ module "vpc" {
 }
 
 module "iam" {
-  source          = "./modules/iam"
-  sftp_bucket_arn = module.s3.sftp_bucket_arn
-  user_aurora_arn = module.rds-aurora.user_aurora_arn
+  source                 = "./modules/iam"
+  sftp_bucket_arn        = module.s3.sftp_bucket_arn
+  user_aurora_arn        = module.rds-aurora.user_aurora_arn
+  aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
+  user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
 }
 
 module "kms" {
@@ -66,6 +68,7 @@ module "lambda_process_monetary_transactions" {
   lambda_path                                   = "../../project-2024-25t2-301-g3t3-lambda"
   database_subnet_ids                           = module.vpc.database_subnet_ids
   lambda_sg_id                                  = module.vpc.lambda_sg_id
+  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
 }
 
 module "bastion_ec2" {

@@ -1,5 +1,7 @@
 variable "sftp_bucket_arn" {}
 variable "user_aurora_arn" {}
+variable "aurora_kms_key_arn" {}
+variable "user_aurora_secret_arn" {}
 
 # IAM for Transfer Family user
 resource "aws_iam_role" "sftp_user_role" {
@@ -95,7 +97,26 @@ resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = var.aurora_kms_key_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = var.user_aurora_secret_arn
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
