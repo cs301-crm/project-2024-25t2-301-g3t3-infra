@@ -6,5 +6,5 @@ resource "aws_eks_cluster" "prod" {
     subnet_ids = var.subnet_ids
   }
 
-  depends_on = [var.eks_role_policy_attachment]
+  depends_on = [var.eks_cluster_role_policy_attachment]
 }

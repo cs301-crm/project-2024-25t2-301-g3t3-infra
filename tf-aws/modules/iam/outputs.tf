@@ -5,5 +5,5 @@ output "eks_cluster_role_arn" {
 
 output "eks_cluster_role_policy_attachment" {
   description = "Role policy attachment of EKS cluster role"
-  value = aws_iam_role_policy_attachment
+  value = aws_iam_role_policy_attachment.prod-AmazonEKSClusterPolicy
 }

@@ -1,3 +1,4 @@
+# EKS RELATED ROLES
 resource "aws_iam_role" "eks" {
   name = "eks-cluster-prod"
 

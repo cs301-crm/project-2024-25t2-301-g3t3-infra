@@ -8,7 +8,6 @@ variable "subnet_ids" {
   type = list(string)
 }
 
-variable "eks_role_policy_attachment" {
+variable "eks_cluster_role_policy_attachment" {
   description = "Role policy attachment of eks role"
-  type = string
 }

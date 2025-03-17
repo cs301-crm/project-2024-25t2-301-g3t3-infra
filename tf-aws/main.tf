@@ -16,7 +16,7 @@ module "iam" {
 module "eks" {
   source = "./modules/eks"
   eks_cluster_role_arn = module.iam.eks_cluster_role_arn
-  eks_role_policy_attachment = module.iam.eks_cluster_role_policy_attachment
+  eks_cluster_role_policy_attachment = module.iam.eks_cluster_role_policy_attachment
   subnet_ids   = concat(
     module.vpc.private_subnet_ids, module.vpc.public_subnet_ids
   )
