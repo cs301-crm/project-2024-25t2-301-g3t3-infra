@@ -1,4 +1,4 @@
-resource "aws_iam_role" "eks-prod" {
+resource "aws_iam_role" "eks" {
   name = "eks-cluster-prod"
 
   assume_role_policy = jsonencode({
@@ -17,6 +17,5 @@ resource "aws_iam_role" "eks-prod" {
 
 resource "aws_iam_role_policy_attachment" "prod-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role = aws_iam_role.eks-prod
+  role = aws_iam_role.eks.name
 }
-

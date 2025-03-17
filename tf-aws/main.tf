@@ -8,3 +8,7 @@ module "dynamodb" {
   billing_mode = "PAY_PER_REQUEST"
   table_name   = "business_transactions_table"
 }
+
+module "iam" {
+  source = "./modules/iam"
+}
