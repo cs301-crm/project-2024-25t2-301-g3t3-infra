@@ -7,8 +7,13 @@ variable "eks_cluster_role_policy_attachment" {
   description = "Role policy attachment of eks role"
 }
 
-variable "subnet_ids" {
-  description = "List of all subnets in the VPC"
+variable "public_subnet_ids" {
+  description = "List of all public subnets in the VPC"
+  type = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "List of all public subnets in the VPC"
   type = list(string)
 }
 
