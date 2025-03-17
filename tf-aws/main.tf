@@ -20,4 +20,6 @@ module "eks" {
   subnet_ids   = concat(
     module.vpc.private_subnet_ids, module.vpc.public_subnet_ids
   )
+  eks_node_role_arn = module.iam.eks_node_role_arn
+  eks_node_role_policy_attachments = module.iam.eks_node_role_policy_attachments
 }
