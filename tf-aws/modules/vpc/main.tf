@@ -115,7 +115,7 @@ resource "aws_network_acl" "firewall" {
 
 resource "aws_network_acl_association" "firewall" {
   network_acl_id = aws_network_acl.firewall.id
-  subnet_id      = aws_subnet.firewall.id
+  subnet_id      = aws_subnet.public.id
 }
 
 # Database NACL
