@@ -17,6 +17,13 @@ resource "aws_subnet" "private_subnet_1" {
   cidr_block              = cidrsubnet(aws_vpc.vpc.cidr_block, 8, 3)
   availability_zone       = "ap-southeast-1a"
   map_public_ip_on_launch = false
+
+  tags = {
+    "Name" = "private-ap-southeast-1a"
+    "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/cluster/demo" = "owned"
+  }
+
 }
 
 resource "aws_subnet" "private_subnet_2" {
