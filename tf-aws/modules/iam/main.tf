@@ -80,7 +80,7 @@ resource "aws_iam_policy" "eks_read_only" {
 
 resource "aws_iam_user_policy_attachment" "dev-eksReadOnly" {
   user = aws_iam_user.dev.name
-  policy_arn = aws_iam_policy.eks_read_only
+  policy_arn = aws_iam_policy.eks_read_only.arn
 }
 
 resource "awscc_eks_access_entry" "dev" {
