@@ -10,15 +10,16 @@ module "dynamodb" {
 }
 
 module "iam" {
-  source = "./modules/iam"
+  source                   = "./modules/iam"
+  eks_cluster_name = module.eks.eks_cluster_name
 }
 
 module "eks" {
-  source = "./modules/eks"
-  eks_cluster_role_arn = module.iam.eks_cluster_role_arn
+  source                             = "./modules/eks"
+  eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
   eks_cluster_role_policy_attachment = module.iam.eks_cluster_role_policy_attachment
-  private_subnet_ids = module.vpc.private_subnet_ids
-  public_subnet_ids = module.vpc.public_subnet_ids
-  eks_node_role_arn = module.iam.eks_node_role_arn
-  eks_node_role_policy_attachments = module.iam.eks_node_role_policy_attachments
+  private_subnet_ids                 = module.vpc.private_subnet_ids
+  public_subnet_ids                  = module.vpc.public_subnet_ids
+  eks_node_role_arn                  = module.iam.eks_node_role_arn
+  eks_node_role_policy_attachments   = module.iam.eks_node_role_policy_attachments
 }

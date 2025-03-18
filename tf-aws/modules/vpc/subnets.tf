@@ -5,8 +5,8 @@ resource "aws_subnet" "public_subnet_1" {
   map_public_ip_on_launch = true
 
   tags = {
-    "Name" = "public-ap-southeast-1a"
-    "kubernetes.io/role/elb" = "1"
+    "Name"                       = "public-ap-southeast-1a"
+    "kubernetes.io/role/elb"     = "1"
     "kubernetes.io/cluster/prod" = "owned"
   }
 }
@@ -18,8 +18,8 @@ resource "aws_subnet" "public_subnet_2" {
   map_public_ip_on_launch = true
 
   tags = {
-    "Name" = "public-ap-southeast-1a"
-    "kubernetes.io/role/elb" = "1"
+    "Name"                       = "public-ap-southeast-1a"
+    "kubernetes.io/role/elb"     = "1"
     "kubernetes.io/cluster/prod" = "owned"
   }
 }
@@ -31,9 +31,9 @@ resource "aws_subnet" "private_subnet_1" {
   map_public_ip_on_launch = false
 
   tags = {
-    "Name" = "private-ap-southeast-1a"
+    "Name"                            = "private-ap-southeast-1a"
     "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/prod" = "owned"
+    "kubernetes.io/cluster/prod"      = "owned"
   }
 }
 
@@ -44,9 +44,9 @@ resource "aws_subnet" "private_subnet_2" {
   map_public_ip_on_launch = false
 
   tags = {
-    "Name" = "private-ap-southeast-1b"
+    "Name"                            = "private-ap-southeast-1b"
     "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/prod" = "owned"
+    "kubernetes.io/cluster/prod"      = "owned"
   }
 }
 

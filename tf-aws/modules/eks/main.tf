@@ -1,9 +1,9 @@
 resource "aws_eks_cluster" "prod" {
-  name = "prod"
+  name     = "prod"
   role_arn = var.eks_cluster_role_arn
 
   vpc_config {
-    subnet_ids = oncat(
+    subnet_ids = concat(
       var.private_subnet_ids, var.public_subnet_ids
     )
   }
@@ -12,13 +12,13 @@ resource "aws_eks_cluster" "prod" {
 }
 
 resource "aws_eks_node_group" "private-nodes" {
-  cluster_name = aws_eks_cluster.prod.name
+  cluster_name    = aws_eks_cluster.prod.name
   node_group_name = "private-nodes"
-  node_role_arn = var.eks_node_role_arn
+  node_role_arn   = var.eks_node_role_arn
 
   subnet_ids = var.private_subnet_ids
 
-  capacity_type = "ON_DEMAND"
+  capacity_type  = "ON_DEMAND"
   instance_types = ["m5.large"]
 
   # eks cluster does not autoscale, this will create aws asgs
@@ -28,5 +28,13 @@ resource "aws_eks_node_group" "private-nodes" {
     min_size     = 0
   }
 
-  depends_on = var.eks_node_role_policy_attachments
+  update_config {
+    max_unavailable = 1
+  }
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
+
+  depends_on = [var.eks_node_role_policy_attachments]
 }

@@ -1,6 +1,6 @@
 variable "eks_cluster_role_arn" {
   description = "ARN of EKS cluster role"
-  type = string
+  type        = string
 }
 
 variable "eks_cluster_role_policy_attachment" {
@@ -9,12 +9,12 @@ variable "eks_cluster_role_policy_attachment" {
 
 variable "public_subnet_ids" {
   description = "List of all public subnets in the VPC"
-  type = list(string)
+  type        = list(string)
 }
 
 variable "private_subnet_ids" {
   description = "List of all public subnets in the VPC"
-  type = list(string)
+  type        = list(string)
 }
 
 variable "eks_node_role_policy_attachments" {
@@ -23,5 +23,5 @@ variable "eks_node_role_policy_attachments" {
 
 variable "eks_node_role_arn" {
   description = "ARN of EKS node role"
-  type = string
+  type        = string
 }
