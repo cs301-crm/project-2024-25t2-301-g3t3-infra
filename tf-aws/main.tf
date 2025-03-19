@@ -9,7 +9,7 @@ module "iam" {
   user_aurora_arn        = module.rds-aurora.user_aurora_arn
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
   user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
-  eks_cluster_name = module.eks.eks_cluster_name
+  eks_cluster_name       = module.eks.eks_cluster_name
 }
 
 module "kms" {
@@ -21,7 +21,7 @@ module "dynamodb" {
   billing_mode = "PAY_PER_REQUEST"
   table_name   = "business_transactions_table"
 }
-  
+
 module "eks" {
   source                             = "./modules/eks"
   eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
@@ -31,7 +31,7 @@ module "eks" {
   eks_node_role_arn                  = module.iam.eks_node_role_arn
   eks_node_role_policy_attachments   = module.iam.eks_node_role_policy_attachments
 }
-    
+
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
   database_subnet_ids = module.vpc.database_subnet_ids
