@@ -13,36 +13,34 @@ terraform {
   }
 }
 
-provider "aws"{
+provider "aws" {
   region = "ap-southeast-1"
 }
 
 resource "aws_amplify_app" "amplify_app" {
-  name       = var.app_name
-  repository = var.repository
+  name        = var.app_name
+  repository  = var.repository
   oauth_token = jsondecode(data.aws_secretsmanager_secret_version.github_token.secret_string)["github-token"]
 
   # The default build_spec added by the Amplify Console for Next
   build_spec = <<-EOT
   version: 1
-
   frontend:
     phases:
         preBuild:
             commands:
-                - npm ci
+                - npm ci --cache .npm --prefer-offline
         build:
             commands:
                 - npm run build
-            
     artifacts:
         baseDirectory: .next
         files:
             - '**/*'
-
     cache:
         paths:
-            - node_modules/**/*
+            - .next/cache/**/*
+            - .npm/**/*
   EOT
 
   # The default rewrites and redirects added by the Amplify Console.
@@ -52,9 +50,9 @@ resource "aws_amplify_app" "amplify_app" {
     target = "/index.html"
   }
 
-  environment_variables = {
-    ENV = "test"
-  }
+#   environment_variables = {
+#     ENV = "test"
+#   }
 }
 
 resource "aws_amplify_branch" "amplify_branch" {
@@ -63,12 +61,12 @@ resource "aws_amplify_branch" "amplify_branch" {
 }
 
 resource "aws_amplify_domain_association" "domain_association" {
-  app_id      = aws_amplify_app.amplify_app.id
-  domain_name = var.domain_name
+  app_id                = aws_amplify_app.amplify_app.id
+  domain_name           = var.domain_name
   wait_for_verification = false
 
   sub_domain {
     branch_name = aws_amplify_branch.amplify_branch.branch_name
-    prefix = var.branch_name
+    prefix      = var.branch_name
   }
 }
