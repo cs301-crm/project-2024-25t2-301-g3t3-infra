@@ -38,8 +38,10 @@ terraform destroy
 - [ ] Configure route table and SG for each subnet
 - [x] Create Dynamodb
 - [x] ~~Add dynamodb into database subnet~~ -> DynamoDB is fully managed, so actly no need to add it into the subnet oops
-- [ ] Create RDS instance
-- [ ] Add RDS instance into database subnet
+- [x] Create RDS instance
+- [x] Add RDS instance into database subnet
 - [ ] Add replication for dynamodb?
 - [ ] Create MSK
-- [ ] Create SFTP server
+- [x] Create SFTP server
+- [ ] Create IAM for lambda functions
+Snapshot called `has-mock-data` is the RDS instance with mock data
