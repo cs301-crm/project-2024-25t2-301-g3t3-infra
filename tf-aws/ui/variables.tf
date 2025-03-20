@@ -10,6 +10,12 @@ variable "app_name" {
   default     = "scrooge-bank-crm"
 }
 
+variable "region" {
+  type        = string
+  description = "aws region"
+  default = "ap-southeast-1"
+}
+
 variable "branch_name" {
   type        = string
   description = "aws amplify app repo branch name"
@@ -20,4 +26,16 @@ variable "domain_name" {
   type        = string
   description = "aws amplify domain name"
   default     = "itsag3t3.com"
+}
+
+variable "platform" {
+  type        = string
+  description = "amplify hosting platform"
+  default     = "WEB_COMPUTE"
+}
+
+variable "amplify_logging_role" {
+  type        = string
+  description = "iam amplify logging role"
+  default     = "arn:aws:iam::345215350058:role/service-role/AmplifySSRLoggingRole-be374fb5-3a88-4787-b5d3-34c24e48878e"
 }

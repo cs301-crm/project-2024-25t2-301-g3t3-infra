@@ -14,7 +14,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-1"
+  region = var.region
 }
 
 resource "aws_amplify_app" "amplify_app" {
@@ -22,7 +22,7 @@ resource "aws_amplify_app" "amplify_app" {
   repository  = var.repository
   oauth_token = jsondecode(data.aws_secretsmanager_secret_version.github_token.secret_string)["github-token"]
 
-  platform = "WEB_COMPUTE"
+  platform = var.platform
 
   # The default build_spec added by the Amplify Console for Next
   build_spec = <<-EOT
@@ -52,20 +52,15 @@ resource "aws_amplify_app" "amplify_app" {
     target = "/index.html"
   }
 
-  iam_service_role_arn = "arn:aws:iam::345215350058:role/service-role/AmplifySSRLoggingRole-be374fb5-3a88-4787-b5d3-34c24e48878e"
+  iam_service_role_arn = var.amplify_logging_role
 }
 
-resource "aws_amplify_branch" "amplify_branch" {
+resource "aws_amplify_branch" "deploy_branch" {
   app_id            = aws_amplify_app.amplify_app.id
   branch_name       = var.branch_name
   enable_auto_build = true
   stage = "PRODUCTION"
   framework         = "Next.js - SSR"
-}
-
-# hosted zone
-resource "aws_route53_zone" "main" {
-  name = "itsag3t3.com"
 }
 
 # associate custom domain 
@@ -75,46 +70,19 @@ resource "aws_amplify_domain_association" "domain_association" {
   wait_for_verification = false
 
   sub_domain {
-    branch_name = aws_amplify_branch.amplify_branch.branch_name
+    branch_name = aws_amplify_branch.deploy_branch.branch_name
     prefix      = "" # root domain
   }
 
   sub_domain {
-    branch_name = aws_amplify_branch.amplify_branch.branch_name
+    branch_name = aws_amplify_branch.deploy_branch.branch_name
     prefix      = "www" 
-  }
-}
-
-# route 53 alias
-resource "aws_route53_record" "root_domain" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "itsag3t3.com"
-  type    = "A"
-
-  alias {
-    name                   = aws_amplify_domain_association.domain_association.domain_name
-    zone_id                = aws_route53_zone.main.zone_id
-    evaluate_target_health = false
-  }
-}
-
-resource "aws_route53_record" "www_subdomain" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www.itsag3t3.com"
-  type    = "A"
-
-  alias {
-    name                   = aws_amplify_domain_association.domain_association.domain_name
-    zone_id                = aws_route53_zone.main.zone_id
-    evaluate_target_health = false
   }
 }
 
 # Trigger Amplify deployment job after app setup
 resource "null_resource" "trigger_amplify_deploy" {
-  #   depends_on = [aws_amplify_domain_association.domain_association]
-  depends_on = [aws_amplify_branch.amplify_branch]
-
+  depends_on = [aws_amplify_branch.deploy_branch]
 
   provisioner "local-exec" {
     command = "aws amplify start-job --app-id ${aws_amplify_app.amplify_app.id} --branch-name ${var.branch_name} --job-type RELEASE"
