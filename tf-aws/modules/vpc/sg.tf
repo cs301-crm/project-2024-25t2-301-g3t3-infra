@@ -66,3 +66,18 @@ resource "aws_vpc_security_group_egress_rule" "bastion_egress" {
   ip_protocol       = "-1"
 }
 
+# For application load balancer
+resource "aws_security_group" "lb_sg" {
+  name        = "lb-sg"
+  description = "Allow access to load balancer"
+  vpc_id      = aws_vpc.vpc.id
+}
+
+resource "aws_security_group_rule" "lb_https" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.lb_sg.id
+}
