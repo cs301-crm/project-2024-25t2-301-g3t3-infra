@@ -100,6 +100,7 @@ message User {
 
 ## Step 2: Register the Schema with Confluent Schema Registry
 Format the message into a `<proto msg name>-schema.json`:
+
 `
 {
   "schemaType": "PROTOBUF",
