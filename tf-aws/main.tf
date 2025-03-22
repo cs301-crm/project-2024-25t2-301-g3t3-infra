@@ -44,6 +44,10 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
+module "glue" {
+  source = "./modules/glue"
+}
+
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
   database_subnet_ids = module.vpc.database_subnet_ids
