@@ -8,7 +8,7 @@ resource "aws_lambda_function" "process_monetary_transactions" {
   function_name = "process_monetary_transactions"
   role          = var.process_monetary_transactions_lambda_role_arn
   handler       = "process_monetary_transactions.lambda_handler"
-  runtime       = "python3.10"
+  runtime       = "python3.13"
   filename      = "dummy.zip" # Dummy file, the actual zip file will be uploaded in the lambda repo
   timeout       = 60
   environment {

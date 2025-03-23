@@ -54,7 +54,6 @@ resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_egress" {
 resource "aws_vpc_security_group_egress_rule" "lambda_to_internet_egress" {
   security_group_id            = aws_security_group.lambda.id
   referenced_security_group_id = aws_security_group.rds.id
-  cidr_ipv4                    = "0.0.0.0/0"
   ip_protocol                  = "tcp"
   from_port                    = 443
   to_port                      = 443
