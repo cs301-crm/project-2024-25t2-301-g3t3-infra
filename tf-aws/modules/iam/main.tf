@@ -217,7 +217,7 @@ resource "aws_iam_user" "admin" {
 }
 
 resource "aws_iam_role" "eks_admin" {
-  name = "eks-node-group-nodes"
+  name = "eks-admin-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
