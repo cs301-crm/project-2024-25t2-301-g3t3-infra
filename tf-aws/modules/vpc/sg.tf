@@ -16,11 +16,19 @@ resource "aws_security_group" "lambda" {
   vpc_id      = aws_vpc.vpc.id
 }
 
-# Allow bastion, lambda access to RDS
-resource "aws_vpc_security_group_ingress_rule" "rds_ingress" {
-  for_each                     = toset([aws_security_group.lambda.id, aws_security_group.bastion.id])
-  security_group_id            = aws_security_group.rds.id
-  referenced_security_group_id = each.value
+# Allow lambda access to RDS
+resource "aws_vpc_security_group_ingress_rule" "rds_to_lambda_ingress" {
+  security_group_id            = aws_security_group.bastion.id
+  referenced_security_group_id = aws_security_group.rds.id
+  ip_protocol                  = "tcp"
+  from_port                    = 5432
+  to_port                      = 5432
+}
+
+# Allow bastion access to RDS
+resource "aws_vpc_security_group_ingress_rule" "rds_to_bastion_ingress" {
+  security_group_id            = aws_security_group.bastion.id
+  referenced_security_group_id = aws_security_group.rds.id
   ip_protocol                  = "tcp"
   from_port                    = 5432
   to_port                      = 5432
@@ -62,7 +70,7 @@ resource "aws_vpc_security_group_egress_rule" "rds_egress" {
 # Allow all outbound from bastion
 resource "aws_vpc_security_group_egress_rule" "bastion_egress" {
   security_group_id = aws_security_group.bastion.id
-  cidr_ipv4         = "0.0.0.0"
+  cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }
 

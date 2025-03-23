@@ -34,14 +34,7 @@ module "eks" {
 
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
-  database_subnet_ids = module.vpc.database_subnet_ids
-  aurora_kms_key_id   = module.kms.aurora_kms_key_id
-  rds_sg_id           = module.vpc.rds_sg_id
-}
-
-module "rds-aurora" {
-  source              = "./modules/rds-aurora"
-  database_subnet_ids = module.vpc.database_subnet_ids
+  database_subnet_ids = module.vpc.private_subnet_ids
   aurora_kms_key_id   = module.kms.aurora_kms_key_id
   rds_sg_id           = module.vpc.rds_sg_id
 }
@@ -60,13 +53,13 @@ module "lambda_process_monetary_transactions" {
   source                                        = "./modules/lambda_process_monetary_transactions"
   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  database_subnet_ids                           = module.vpc.database_subnet_ids
+  private_subnet_ids                            = module.vpc.private_subnet_ids
   lambda_sg_id                                  = module.vpc.lambda_sg_id
   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
 }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
-  public_subnet_id = module.vpc.public_subnet_id
+  public_subnet_id = module.vpc.public_subnet_ids[0]
   bastion_sg       = module.vpc.bastion_sg_id
 }
