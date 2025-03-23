@@ -13,7 +13,7 @@ variable "app_name" {
 variable "region" {
   type        = string
   description = "aws region"
-  default = "ap-southeast-1"
+  default     = "ap-southeast-1"
 }
 
 variable "branch_name" {
@@ -37,5 +37,5 @@ variable "platform" {
 variable "amplify_logging_role" {
   type        = string
   description = "iam amplify logging role"
-  default     = "arn:aws:iam::345215350058:role/service-role/AmplifySSRLoggingRole-be374fb5-3a88-4787-b5d3-34c24e48878e"
+  default     = "arn:aws:iam::345215350058:role/service-role/AmplifySSRLoggingRole-be374fb5-3a88-4787-b5d3-34c24e48878e" # should this be a secret?
 }

@@ -59,7 +59,7 @@ resource "aws_amplify_branch" "deploy_branch" {
   app_id            = aws_amplify_app.amplify_app.id
   branch_name       = var.branch_name
   enable_auto_build = true
-  stage = "PRODUCTION"
+  stage             = "PRODUCTION"
   framework         = "Next.js - SSR"
 }
 
@@ -76,7 +76,7 @@ resource "aws_amplify_domain_association" "domain_association" {
 
   sub_domain {
     branch_name = aws_amplify_branch.deploy_branch.branch_name
-    prefix      = "www" 
+    prefix      = "www"
   }
 }
 
