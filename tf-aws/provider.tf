@@ -26,6 +26,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.16"
     }
+    awscc = {
+      source = "hashicorp/awscc"
+      version = "~> 1.34.0"
+    }
   }
   required_version = ">= 1.0"
   backend "s3" {
