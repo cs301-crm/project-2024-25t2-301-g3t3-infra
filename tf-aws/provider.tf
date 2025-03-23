@@ -1,20 +1,20 @@
 variable "region" {}
 
-# data "aws_eks_cluster" "prod" {
-#   name = "prod"
-# }
-#
-# data "aws_eks_cluster_auth" "prod" {
-#   name = "prod"
-# }
-#
-# provider "helm" {
-#   kubernetes {
-#     host                   = data.aws_eks_cluster.prod.endpoint
-#     cluster_ca_certificate = base64decode(data.aws_eks_cluster.prod.certificate_authority.0.data)
-#     token                  = data.aws_eks_cluster_auth.prod.token
-#   }
-# }
+data "aws_eks_cluster" "prod" {
+  name = "prod"
+}
+
+data "aws_eks_cluster_auth" "prod" {
+  name = "prod"
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.prod.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.prod.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.prod.token
+  }
+}
 
 provider "aws" {
   region = var.region
