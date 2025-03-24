@@ -76,3 +76,26 @@ Created topic my-topic.
 > **Note:** The `--bootstrap-server` flag specifies the connection endpoint.
 > - Inside the container, use `broker:29092`.
 > - Outside the container (e.g., from your laptop), use `localhost:9092`.
+
+# Getting Access to EKS
+
+This guide provides step-by-step instructions to set up and run Apache Kafka using Docker.
+
+## Prerequisites
+
+Ensure that **AWS CLI** and **kubectl** is installed and running on your machine.
+
+To verify both are installed, execute:
+
+```sh
+aws --version
+kubectl version
+```
+
+## Update kubeconfig 
+
+Enter the following command to get access to EKS. 
+
+```sh
+aws eks update-kubeconfig --region ap-southeast-1 --name prod
+```
