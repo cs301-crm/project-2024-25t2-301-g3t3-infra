@@ -32,6 +32,13 @@ module "eks" {
   eks_node_role_policy_attachments   = module.iam.eks_node_role_policy_attachments
 }
 
+module "helm" {
+  source            = "./modules/helm"
+  eks_cluster_name  = module.eks.eks_cluster_name
+  eks_private_nodes = module.eks.eks_private_nodes
+}
+
+
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
   database_subnet_ids = module.vpc.private_subnet_ids

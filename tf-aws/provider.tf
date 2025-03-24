@@ -1,21 +1,22 @@
 variable "region" {}
 
 data "aws_eks_cluster" "prod" {
-  name = "prod"
+  name       = module.eks.eks_cluster_name
+  depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "prod" {
-  name = "prod"
+  name       = module.eks.eks_cluster_name
+  depends_on = [module.eks]
 }
 
 provider "helm" {
   kubernetes {
     host                   = data.aws_eks_cluster.prod.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.prod.certificate_authority.0.data)
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.prod.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.prod.token
   }
 }
-
 provider "aws" {
   region = var.region
 }
@@ -27,7 +28,7 @@ terraform {
       version = "~> 5.0"
     }
     awscc = {
-      source = "hashicorp/awscc"
+      source  = "hashicorp/awscc"
       version = "~> 1.34.0"
     }
   }
