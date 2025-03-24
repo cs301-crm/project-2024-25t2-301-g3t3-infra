@@ -18,9 +18,6 @@ resource "helm_release" "aws_lbc" {
   depends_on = [var.eks_private_nodes]
 }
 
-# kubectl get secrets argocd-initial-admin-secret -o yaml -n argocd
-# take password and echo "<password>" | base64 -d
-
 resource "helm_release" "argocd" {
   name = "argocd"
 
