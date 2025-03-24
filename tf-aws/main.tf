@@ -38,6 +38,9 @@ module "helm" {
   eks_private_nodes = module.eks.eks_private_nodes
 }
 
+module "kubernetes" {
+  source = "./modules/kubernetes"
+}
 
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
