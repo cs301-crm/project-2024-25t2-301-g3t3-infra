@@ -206,12 +206,6 @@ resource "aws_iam_user_policy_attachment" "dev-eksReadOnly" {
   policy_arn = aws_iam_policy.eks_read_only.arn
 }
 
-resource "awscc_eks_access_entry" "dev" {
-  cluster_name      = var.eks_cluster_name
-  principal_arn     = aws_iam_user.dev.arn
-  kubernetes_groups = ["eks-dev"]
-}
-
 resource "aws_iam_user" "admin" {
   name = "admin"
 }
@@ -277,11 +271,6 @@ resource "aws_iam_policy" "eks_assume_admin" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "admin-eks" {
-  role       = aws_iam_role.eks_admin.name
-  policy_arn = aws_iam_policy.eks_admin.arn
-}
-
 resource "aws_iam_user_policy_attachment" "admin" {
   user       = aws_iam_user.admin.name
   policy_arn = aws_iam_policy.eks_admin.arn
@@ -305,6 +294,18 @@ resource "aws_iam_role" "aws_lbc" {
       }
     ]
   })
+}
+
+resource "aws_eks_access_entry" "admin" {
+  cluster_name = var.eks_cluster_name
+  principal_arn = aws_iam_role.eks_admin.arn
+  kubernetes_groups = ["eks-admin"]
+}
+
+resource "awscc_eks_access_entry" "dev" {
+  cluster_name      = var.eks_cluster_name
+  principal_arn     = aws_iam_user.dev.arn
+  kubernetes_groups = ["eks-viewer"]
 }
 
 resource "aws_iam_policy" "aws_lbc" {
