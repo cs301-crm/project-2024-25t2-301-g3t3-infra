@@ -79,7 +79,7 @@ Created topic my-topic.
 
 # Getting Access to EKS
 
-This guide provides step-by-step instructions to set up and run Apache Kafka using Docker.
+This guide provides step-by-step instructions to connect to AWS EKS.
 
 ## Prerequisites
 
@@ -98,4 +98,34 @@ Enter the following command to get access to EKS.
 
 ```sh
 aws eks update-kubeconfig --region ap-southeast-1 --name prod
+```
+
+# Connecting to ArgoCD
+
+This guide provides step-by-step instructions to connect to ArgoCD.
+
+## Prerequisites
+
+Ensure that **kubectl** is installed and running on your machine.
+
+To verify kubectl is installed, execute:
+
+```sh
+kubectl version
+```
+
+## Get ArgoCD initial password
+
+Enter the following command to get the base64 encoded password in ArgoCD and decode it.
+
+```sh
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+## Port forward to your localhost
+
+Enter the following command to expose the argo application to your local port.
+
+```sh
+kubectl port-forward svc/argocd-server 9999:80 -n argocd
 ```
