@@ -18,7 +18,7 @@ resource "aws_security_group" "lambda" {
 
 # Allow lambda access to RDS
 resource "aws_vpc_security_group_ingress_rule" "rds_to_lambda_ingress" {
-  security_group_id            = aws_security_group.bastion.id
+  security_group_id            = aws_security_group.lambda.id
   referenced_security_group_id = aws_security_group.rds.id
   ip_protocol                  = "tcp"
   from_port                    = 5432

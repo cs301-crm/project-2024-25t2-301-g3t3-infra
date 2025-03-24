@@ -125,7 +125,7 @@ resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "eks" {
-    name = "eks-cluster-prod"
+  name = "eks-cluster-prod"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -294,8 +294,8 @@ resource "aws_iam_role" "aws_lbc" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect    = "Allow"
-        Action    = [
+        Effect = "Allow"
+        Action = [
           "sts:AssumeRole",
           "sts:TagSession"
         ]
@@ -308,7 +308,7 @@ resource "aws_iam_role" "aws_lbc" {
 }
 
 resource "aws_iam_policy" "aws_lbc" {
-  name   = "AWSLoadBalancerController"
+  name = "AWSLoadBalancerController"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -323,8 +323,8 @@ resource "aws_iam_policy" "aws_lbc" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "ec2:DescribeAccountAttributes",
           "ec2:DescribeAddresses",
           "ec2:DescribeAvailabilityZones",
@@ -353,8 +353,8 @@ resource "aws_iam_policy" "aws_lbc" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "cognito-idp:DescribeUserPoolClient",
           "acm:ListCertificates",
           "acm:DescribeCertificate",
@@ -376,8 +376,8 @@ resource "aws_iam_policy" "aws_lbc" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "ec2:AuthorizeSecurityGroupIngress",
           "ec2:RevokeSecurityGroupIngress"
         ]
@@ -407,14 +407,14 @@ resource "aws_iam_policy" "aws_lbc" {
         Resource = "arn:aws:ec2:*:*:security-group/*"
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "true",
+            "aws:RequestTag/elbv2.k8s.aws/cluster"  = "true",
             "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
           }
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "ec2:AuthorizeSecurityGroupIngress",
           "ec2:RevokeSecurityGroupIngress",
           "ec2:DeleteSecurityGroup"
@@ -427,8 +427,8 @@ resource "aws_iam_policy" "aws_lbc" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:CreateLoadBalancer",
           "elasticloadbalancing:CreateTargetGroup"
         ]
@@ -440,8 +440,8 @@ resource "aws_iam_policy" "aws_lbc" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:CreateListener",
           "elasticloadbalancing:DeleteListener",
           "elasticloadbalancing:CreateRule",
@@ -450,8 +450,8 @@ resource "aws_iam_policy" "aws_lbc" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:AddTags",
           "elasticloadbalancing:RemoveTags"
         ]
@@ -462,14 +462,14 @@ resource "aws_iam_policy" "aws_lbc" {
         ]
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "true",
+            "aws:RequestTag/elbv2.k8s.aws/cluster"  = "true",
             "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
           }
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:AddTags",
           "elasticloadbalancing:RemoveTags"
         ]
@@ -481,8 +481,8 @@ resource "aws_iam_policy" "aws_lbc" {
         ]
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:ModifyLoadBalancerAttributes",
           "elasticloadbalancing:SetIpAddressType",
           "elasticloadbalancing:SetSecurityGroups",
@@ -500,8 +500,8 @@ resource "aws_iam_policy" "aws_lbc" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = ["elasticloadbalancing:AddTags"]
+        Effect = "Allow"
+        Action = ["elasticloadbalancing:AddTags"]
         Resource = [
           "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
           "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
@@ -520,16 +520,16 @@ resource "aws_iam_policy" "aws_lbc" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:RegisterTargets",
           "elasticloadbalancing:DeregisterTargets"
         ]
         Resource = "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:SetWebAcl",
           "elasticloadbalancing:ModifyListener",
           "elasticloadbalancing:AddListenerCertificates",
@@ -549,8 +549,40 @@ resource "aws_iam_role_policy_attachment" "aws_lbc" {
 }
 
 resource "awscc_eks_pod_identity_association" "aws_lbc" {
-  cluster_name = var.eks_cluster_name
-  namespace = "kube-system"
+  cluster_name    = var.eks_cluster_name
+  namespace       = "kube-system"
   service_account = "aws-load-balancer-controller"
-  role_arn = aws_iam_role.aws_lbc.arn
+  role_arn        = aws_iam_role.aws_lbc.arn
 }
+
+resource "aws_iam_role" "argocd_image_updater" {
+  name = "${var.eks_cluster_name}-argocd-image-updater"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "argocd_image_updater" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role = aws_iam_role.argocd_image_updater.name
+}
+
+resource "aws_eks_pod_identity_association" "argocd_image_updater" {
+  cluster_name = var.eks_cluster_name
+  namespace = "argocd"
+  service_account = "argocd-image-updater"
+  role_arn = aws_iam_role.argocd_image_updater.arn
+}
+
