@@ -576,13 +576,12 @@ resource "aws_iam_role" "argocd_image_updater" {
 
 resource "aws_iam_role_policy_attachment" "argocd_image_updater" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role = aws_iam_role.argocd_image_updater.name
+  role       = aws_iam_role.argocd_image_updater.name
 }
 
 resource "aws_eks_pod_identity_association" "argocd_image_updater" {
-  cluster_name = var.eks_cluster_name
-  namespace = "argocd"
+  cluster_name    = var.eks_cluster_name
+  namespace       = "argocd"
   service_account = "argocd-image-updater"
-  role_arn = aws_iam_role.argocd_image_updater.arn
+  role_arn        = aws_iam_role.argocd_image_updater.arn
 }
-
