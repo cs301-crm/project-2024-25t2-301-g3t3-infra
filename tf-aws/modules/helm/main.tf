@@ -31,6 +31,24 @@ resource "helm_release" "metrics_server" {
   depends_on = [var.eks_private_nodes]
 }
 
+resource "helm_release" "cluster_autoscaler" {
+  name = "cluster-autoscaler"
+
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart = "cluster-autoscaler"
+  namespace = "kube-system"
+  version = "9.46.3"
+
+  values = [file("${path.module}/values/cluster-autoscaler.yaml")]
+
+  set {
+    name  = "autoDiscovery.clusterName"
+    value = var.eks_cluster_name
+  }
+
+  depends_on = [var.eks_private_nodes]
+}
+
 resource "helm_release" "argocd" {
   name = "argocd"
 
@@ -38,7 +56,7 @@ resource "helm_release" "argocd" {
   chart            = "argo-cd"
   namespace        = "argocd"
   create_namespace = true
-  version          = "3.35.4"
+  version          = "7.8.13"
 
   values = [file("${path.module}/values/argocd.yaml")]
 
