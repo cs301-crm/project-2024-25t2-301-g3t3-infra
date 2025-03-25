@@ -36,8 +36,12 @@ module "helm" {
   source            = "./modules/helm"
   eks_cluster_name  = module.eks.eks_cluster_name
   eks_private_nodes = module.eks.eks_private_nodes
+  vpc_id = module.vpc.vpc_id
 }
 
+module "kubernetes" {
+  source = "./modules/kubernetes"
+}
 
 module "rds-aurora" {
   source              = "./modules/rds-aurora"

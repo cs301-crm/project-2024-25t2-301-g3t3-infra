@@ -5,3 +5,7 @@ variable "eks_cluster_name" {
 variable "eks_private_nodes" {
   description = "Private node groups of our EKS"
 }
+
+variable "vpc_id" {
+  description = "Id of VPC"
+}

@@ -183,7 +183,7 @@ resource "aws_iam_user" "dev" {
   name = "dev"
 }
 
-resource "aws_iam_policy" "eks_read_only" {
+resource "aws_iam_policy" "dev_eks" {
   name = "AmazonEKSDeveloperPolicy"
 
   policy = jsonencode({
@@ -201,19 +201,15 @@ resource "aws_iam_policy" "eks_read_only" {
   })
 }
 
-resource "aws_iam_user_policy_attachment" "dev-eksReadOnly" {
+resource "aws_iam_user_policy_attachment" "dev_eks" {
   user       = aws_iam_user.dev.name
-  policy_arn = aws_iam_policy.eks_read_only.arn
+  policy_arn = aws_iam_policy.dev_eks.arn
 }
 
 resource "awscc_eks_access_entry" "dev" {
   cluster_name      = var.eks_cluster_name
   principal_arn     = aws_iam_user.dev.arn
-  kubernetes_groups = ["eks-dev"]
-}
-
-resource "aws_iam_user" "admin" {
-  name = "admin"
+  kubernetes_groups = ["eks-viewer"]
 }
 
 resource "aws_iam_role" "eks_admin" {
@@ -260,6 +256,15 @@ resource "aws_iam_policy" "eks_admin" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "eks_admin" {
+  role       = aws_iam_role.eks_admin.name
+  policy_arn = aws_iam_policy.eks_admin.arn
+}
+
+resource "aws_iam_user" "manager" {
+  name = "manager"
+}
+
 resource "aws_iam_policy" "eks_assume_admin" {
   name = "AmazonEKSAssumeAdminPolicy"
 
@@ -277,271 +282,95 @@ resource "aws_iam_policy" "eks_assume_admin" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "admin-eks" {
-  role       = aws_iam_role.eks_admin.name
-  policy_arn = aws_iam_policy.eks_admin.arn
+resource "aws_iam_user_policy_attachment" "manager" {
+  user = aws_iam_user.manager.name
+  policy_arn = aws_iam_policy.eks_assume_admin.arn
 }
 
-resource "aws_iam_user_policy_attachment" "admin" {
-  user       = aws_iam_user.admin.name
-  policy_arn = aws_iam_policy.eks_admin.arn
+resource "aws_eks_access_entry" "admin" {
+  cluster_name = var.eks_cluster_name
+  principal_arn = aws_iam_role.eks_admin.arn
+  kubernetes_groups = ["eks-admin"]
 }
 
-resource "aws_iam_role" "aws_lbc" {
-  name = "${var.eks_cluster_name}-aws-lbc"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-        Principal = {
-          Service = "pods.eks.amazonaws.com"
-        }
-      }
+# POD ASSUME POLICY
+data "aws_iam_policy_document" "pod_assume_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession"
     ]
-  })
+
+    principals {
+      identifiers = ["pods.eks.amazonaws.com"]
+      type = "Service"
+    }
+  }
 }
 
-resource "aws_iam_policy" "aws_lbc" {
-  name = "AWSLoadBalancerController"
+# EKS CLUSTER AUTOSCALER
+resource "aws_iam_policy" "cluster_autoscaler" {
+  name = "${var.eks_cluster_name}-cluster-autoscaler"
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["iam:CreateServiceLinkedRole"]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "iam:AWSServiceName" = "elasticloadbalancing.amazonaws.com"
-          }
-        }
-      },
-      {
         Effect = "Allow"
         Action = [
-          "ec2:DescribeAccountAttributes",
-          "ec2:DescribeAddresses",
-          "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeInternetGateways",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeVpcPeeringConnections",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeInstances",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DescribeTags",
-          "ec2:GetCoipPoolUsage",
-          "ec2:DescribeCoipPools",
-          "elasticloadbalancing:DescribeLoadBalancers",
-          "elasticloadbalancing:DescribeLoadBalancerAttributes",
-          "elasticloadbalancing:DescribeListeners",
-          "elasticloadbalancing:DescribeListenerCertificates",
-          "elasticloadbalancing:DescribeSSLPolicies",
-          "elasticloadbalancing:DescribeRules",
-          "elasticloadbalancing:DescribeTargetGroups",
-          "elasticloadbalancing:DescribeTargetGroupAttributes",
-          "elasticloadbalancing:DescribeTargetHealth",
-          "elasticloadbalancing:DescribeTags",
-          "elasticloadbalancing:DescribeTrustStores"
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeScalingActivities",
+          "autoscaling:DescribeTags",
+          "ec2:DescribeImages",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeLaunchTemplateVersions",
+          "ec2:GetInstanceTypesFromInstanceRequirements",
+          "eks:DescribeNodegroup"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
-          "cognito-idp:DescribeUserPoolClient",
-          "acm:ListCertificates",
-          "acm:DescribeCertificate",
-          "iam:ListServerCertificates",
-          "iam:GetServerCertificate",
-          "waf-regional:GetWebACL",
-          "waf-regional:GetWebACLForResource",
-          "waf-regional:AssociateWebACL",
-          "waf-regional:DisassociateWebACL",
-          "wafv2:GetWebACL",
-          "wafv2:GetWebACLForResource",
-          "wafv2:AssociateWebACL",
-          "wafv2:DisassociateWebACL",
-          "shield:GetSubscriptionState",
-          "shield:DescribeProtection",
-          "shield:CreateProtection",
-          "shield:DeleteProtection"
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup"
         ]
         Resource = "*"
       },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["ec2:CreateSecurityGroup"]
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["ec2:CreateTags"]
-        Resource = "arn:aws:ec2:*:*:security-group/*"
-        Condition = {
-          StringEquals = {
-            "ec2:CreateAction" = "CreateSecurityGroup"
-          }
-          Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["ec2:CreateTags", "ec2:DeleteTags"]
-        Resource = "arn:aws:ec2:*:*:security-group/*"
-        Condition = {
-          Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster"  = "true",
-            "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:DeleteSecurityGroup"
-        ]
-        Resource = "*"
-        Condition = {
-          Null = {
-            "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:CreateLoadBalancer",
-          "elasticloadbalancing:CreateTargetGroup"
-        ]
-        Resource = "*"
-        Condition = {
-          Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:CreateListener",
-          "elasticloadbalancing:DeleteListener",
-          "elasticloadbalancing:CreateRule",
-          "elasticloadbalancing:DeleteRule"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:AddTags",
-          "elasticloadbalancing:RemoveTags"
-        ]
-        Resource = [
-          "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-          "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-          "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
-        ]
-        Condition = {
-          Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster"  = "true",
-            "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:AddTags",
-          "elasticloadbalancing:RemoveTags"
-        ]
-        Resource = [
-          "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
-          "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
-          "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-          "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:ModifyLoadBalancerAttributes",
-          "elasticloadbalancing:SetIpAddressType",
-          "elasticloadbalancing:SetSecurityGroups",
-          "elasticloadbalancing:SetSubnets",
-          "elasticloadbalancing:DeleteLoadBalancer",
-          "elasticloadbalancing:ModifyTargetGroup",
-          "elasticloadbalancing:ModifyTargetGroupAttributes",
-          "elasticloadbalancing:DeleteTargetGroup"
-        ]
-        Resource = "*"
-        Condition = {
-          Null = {
-            "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = ["elasticloadbalancing:AddTags"]
-        Resource = [
-          "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-          "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-          "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
-        ]
-        Condition = {
-          StringEquals = {
-            "elasticloadbalancing:CreateAction" = [
-              "CreateTargetGroup",
-              "CreateLoadBalancer"
-            ]
-          }
-          Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "false"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:RegisterTargets",
-          "elasticloadbalancing:DeregisterTargets"
-        ]
-        Resource = "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:SetWebAcl",
-          "elasticloadbalancing:ModifyListener",
-          "elasticloadbalancing:AddListenerCertificates",
-          "elasticloadbalancing:RemoveListenerCertificates",
-          "elasticloadbalancing:ModifyRule"
-        ]
-        Resource = "*"
-      }
     ]
   })
 }
 
+resource "aws_iam_role" "cluster_autoscaler" {
+  name = "${var.eks_cluster_name}-cluster-autoscaler"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
+  policy_arn = aws_iam_policy.cluster_autoscaler.arn
+  role = aws_iam_role.cluster_autoscaler.name
+}
+
+resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "kube-system"
+  service_account = "cluster-autoscaler"
+  role_arn        = aws_iam_role.cluster_autoscaler.arn
+}
+
+# EKS LBC
+resource "aws_iam_policy" "aws_lbc" {
+  name = "AWSLoadBalancerController"
+  policy = file("${path.module}/policies/AWSLoadBalancerController.json")
+}
+
+resource "aws_iam_role" "aws_lbc" {
+  name = "${var.eks_cluster_name}-aws-lbc"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
+}
 
 resource "aws_iam_role_policy_attachment" "aws_lbc" {
   policy_arn = aws_iam_policy.aws_lbc.arn
