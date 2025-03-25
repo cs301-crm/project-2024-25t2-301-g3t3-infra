@@ -1,23 +1,3 @@
-# resource "helm_release" "aws_lbc" {
-#   name = "aws-load-balancer-controller"
-#
-#   repository = "https://aws.github.io/eks-charts"
-#   chart      = "aws-load-balancer-controller"
-#   namespace  = "kube-system"
-#   version    = "1.7.2"
-#
-#   set {
-#     name  = "clusterName"
-#     value = var.eks_cluster_name
-#   }
-#
-#   set {
-#     name  = "serviceAccount.name"
-#     value = "aws-load-balancer-controller"
-#   }
-#   depends_on = [var.eks_private_nodes]
-# }
-
 resource "helm_release" "metrics_server" {
   name = "metrics-server"
 
@@ -45,6 +25,24 @@ resource "helm_release" "cluster_autoscaler" {
     name  = "autoDiscovery.clusterName"
     value = var.eks_cluster_name
   }
+
+  depends_on = [var.eks_private_nodes]
+}
+
+resource "helm_release" "aws_lbc" {
+  name = "aws-load-balancer-controller"
+
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  version    = "1.7.2"
+
+  set {
+    name  = "clusterName"
+    value = var.eks_cluster_name
+  }
+
+  values = [file("${path.module}/values/aws-lbc.yaml")]
 
   depends_on = [var.eks_private_nodes]
 }
