@@ -26,7 +26,7 @@ resource "helm_release" "cluster_autoscaler" {
     value = var.eks_cluster_name
   }
 
-  depends_on = [var.eks_private_nodes]
+  depends_on = [helm_release.metrics_server]
 }
 
 resource "helm_release" "aws_lbc" {
@@ -35,11 +35,16 @@ resource "helm_release" "aws_lbc" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
-  version    = "1.7.2"
+  version    = "1.12.0"
 
   set {
     name  = "clusterName"
     value = var.eks_cluster_name
+  }
+
+  set {
+    name = "vpcId"
+    value = var.vpc_id
   }
 
   values = [file("${path.module}/values/aws-lbc.yaml")]
