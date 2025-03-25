@@ -1,9 +1,3 @@
-variable "process_monetary_transactions_lambda_role_arn" {}
-variable "sftp_bucket_arn" {}
-variable "database_subnet_ids" {}
-variable "lambda_sg_id" {}
-variable "user_aurora_secret_arn" {}
-
 resource "null_resource" "create_dummy_zip" {
   provisioner "local-exec" {
     command = "echo 'This is a dummy file' > dummy.txt && zip dummy.zip dummy.txt"
@@ -23,7 +17,7 @@ resource "aws_lambda_function" "process_monetary_transactions" {
     }
   }
   vpc_config {
-    subnet_ids         = var.database_subnet_ids
+    subnet_ids         = var.private_subnet_ids
     security_group_ids = [var.lambda_sg_id]
   }
 
