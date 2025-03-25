@@ -78,3 +78,17 @@ resource "helm_release" "image-updater" {
   values     = [file("${path.module}/values/image-updater.yaml")]
   depends_on = [helm_release.argocd]
 }
+
+resource "helm_release" "nginx_ingress" {
+  name = "nginx-ingress"
+
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart = "ingress-nginx"
+  namespace = "ingress"
+  create_namespace = true
+  version = "4.12.1"
+
+  values = [file("${path.module}/values/nginx-ingress.yaml")]
+
+  depends_on = [helm_release.aws_lbc]
+}
