@@ -364,7 +364,7 @@ resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
 # EKS LBC
 resource "aws_iam_policy" "aws_lbc" {
   name = "AWSLoadBalancerController"
-  policy = file("${path.module}/iam/policies/AWSLoadBalancerController.json")
+  policy = file("${path.module}/policies/AWSLoadBalancerController.json")
 }
 
 resource "aws_iam_role" "aws_lbc" {
