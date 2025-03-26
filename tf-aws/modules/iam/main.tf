@@ -283,13 +283,13 @@ resource "aws_iam_policy" "eks_assume_admin" {
 }
 
 resource "aws_iam_user_policy_attachment" "manager" {
-  user = aws_iam_user.manager.name
+  user       = aws_iam_user.manager.name
   policy_arn = aws_iam_policy.eks_assume_admin.arn
 }
 
 resource "aws_eks_access_entry" "admin" {
-  cluster_name = var.eks_cluster_name
-  principal_arn = aws_iam_role.eks_admin.arn
+  cluster_name      = var.eks_cluster_name
+  principal_arn     = aws_iam_role.eks_admin.arn
   kubernetes_groups = ["eks-admin"]
 }
 
@@ -304,7 +304,7 @@ data "aws_iam_policy_document" "pod_assume_policy" {
 
     principals {
       identifiers = ["pods.eks.amazonaws.com"]
-      type = "Service"
+      type        = "Service"
     }
   }
 }
@@ -345,13 +345,13 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.eks_cluster_name}-cluster-autoscaler"
+  name               = "${var.eks_cluster_name}-cluster-autoscaler"
   assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   policy_arn = aws_iam_policy.cluster_autoscaler.arn
-  role = aws_iam_role.cluster_autoscaler.name
+  role       = aws_iam_role.cluster_autoscaler.name
 }
 
 resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
@@ -363,12 +363,12 @@ resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
 
 # EKS LBC
 resource "aws_iam_policy" "aws_lbc" {
-  name = "AWSLoadBalancerController"
+  name   = "AWSLoadBalancerController"
   policy = file("${path.module}/policies/AWSLoadBalancerController.json")
 }
 
 resource "aws_iam_role" "aws_lbc" {
-  name = "${var.eks_cluster_name}-aws-lbc"
+  name               = "${var.eks_cluster_name}-aws-lbc"
   assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
