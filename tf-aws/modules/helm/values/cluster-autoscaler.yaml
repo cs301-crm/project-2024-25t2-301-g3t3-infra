@@ -1,6 +1,0 @@
----
-rbac:
-  serviceAccount:
-    name: "cluster-autoscaler"
-
-awsRegion: "ap-southeast-1"

@@ -1,3 +1,0 @@
----
-serviceAccount:
-  name: "aws-load-balancer-controller"

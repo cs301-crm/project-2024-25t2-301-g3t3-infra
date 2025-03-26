@@ -1,6 +1,29 @@
+variable "az" {}
+variable "region" {}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.16"
+    }
+  }
+  required_version = ">= 1.0"
+  backend "s3" {
+    bucket = "scrooge-bank-g3t3-terraform-state"
+    key    = "global/main.tfstate"
+    region = "ap-southeast-1" # cannot use variable because this is used before variables are declared
+  }
+}
+
+provider "aws" {
+  region = var.region
+}
+
 module "vpc" {
   source   = "./modules/vpc"
   vpc_cidr = "10.0.0.0/16"
+  az       = var.az
 }
 
 module "iam" {
@@ -9,7 +32,6 @@ module "iam" {
   user_aurora_arn        = module.rds-aurora.user_aurora_arn
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
   user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
-  eks_cluster_name       = module.eks.eks_cluster_name
 }
 
 module "kms" {
@@ -22,30 +44,9 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
-module "eks" {
-  source                             = "./modules/eks"
-  eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
-  eks_cluster_role_policy_attachment = module.iam.eks_cluster_role_policy_attachment
-  private_subnet_ids                 = module.vpc.private_subnet_ids
-  public_subnet_ids                  = module.vpc.public_subnet_ids
-  eks_node_role_arn                  = module.iam.eks_node_role_arn
-  eks_node_role_policy_attachments   = module.iam.eks_node_role_policy_attachments
-}
-
-module "helm" {
-  source            = "./modules/helm"
-  eks_cluster_name  = module.eks.eks_cluster_name
-  eks_private_nodes = module.eks.eks_private_nodes
-  vpc_id = module.vpc.vpc_id
-}
-
-module "kubernetes" {
-  source = "./modules/kubernetes"
-}
-
 module "rds-aurora" {
   source              = "./modules/rds-aurora"
-  database_subnet_ids = module.vpc.private_subnet_ids
+  database_subnet_ids = module.vpc.database_subnet_ids
   aurora_kms_key_id   = module.kms.aurora_kms_key_id
   rds_sg_id           = module.vpc.rds_sg_id
 }
@@ -64,14 +65,14 @@ module "lambda_process_monetary_transactions" {
   source                                        = "./modules/lambda_process_monetary_transactions"
   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  private_subnet_ids                            = module.vpc.private_subnet_ids
+  database_subnet_ids                           = module.vpc.database_subnet_ids
   lambda_sg_id                                  = module.vpc.lambda_sg_id
   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
 }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
-  public_subnet_id = module.vpc.public_subnet_ids[0]
+  public_subnet_id = module.vpc.public_subnet_id
   bastion_sg       = module.vpc.bastion_sg_id
 }
 
