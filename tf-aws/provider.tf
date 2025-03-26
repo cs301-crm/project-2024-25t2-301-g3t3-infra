@@ -29,6 +29,11 @@ provider "aws" {
   region = var.region
 }
 
+# TODO: TLS cert configuration 
+provider "kafka" {
+  bootstrap_servers = [aws_msk_cluster.scrooge_bank_cluster.bootstrap_brokers]
+}
+
 terraform {
   required_providers {
     aws = {
@@ -42,6 +47,9 @@ terraform {
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
+    }
+    kafka = {
+      source = "Mongey/kafka"
     }
   }
   required_version = ">= 1.0"
