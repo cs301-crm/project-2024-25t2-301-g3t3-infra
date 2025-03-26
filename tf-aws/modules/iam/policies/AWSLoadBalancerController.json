@@ -34,6 +34,7 @@
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeListenerCertificates",
         "elasticloadbalancing:DescribeSSLPolicies",
+        "elasticloadbalancing:DescribeListenerAttributes",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetGroupAttributes",
