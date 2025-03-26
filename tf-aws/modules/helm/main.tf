@@ -111,7 +111,7 @@ resource "helm_release" "prometheus-k8s" {
   name = "prometheus-k8s"
 
   repository = "https://prometheus-community.github.io/helm-charts"
-  chart = "prometheus-community/kube-prometheus-stack"
+  chart = "kube-prometheus-stack"
   namespace = "monitoring"
   create_namespace = true
   version = "70.3.0"
