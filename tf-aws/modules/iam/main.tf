@@ -386,21 +386,7 @@ resource "awscc_eks_pod_identity_association" "aws_lbc" {
 
 resource "aws_iam_role" "argocd_image_updater" {
   name = "${var.eks_cluster_name}-argocd-image-updater"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-        Principal = {
-          Service = "pods.eks.amazonaws.com"
-        }
-      },
-    ]
-  })
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "argocd_image_updater" {
@@ -415,40 +401,20 @@ resource "aws_eks_pod_identity_association" "argocd_image_updater" {
   role_arn        = aws_iam_role.argocd_image_updater.arn
 }
 
-data "tls_certificate" "eks" {
-  url = var.eks_openid_connect_issuer_url
-}
-
-resource "aws_iam_openid_connect_provider" "eks" {
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
-  url             = var.eks_openid_connect_issuer_url
-}
-
-data "aws_iam_policy_document" "efs_csi_driver" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
-
-    condition {
-      test     = "StringEquals"
-      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:kube-system:efs-csi-controller-sa"]
-    }
-
-    principals {
-      identifiers = [aws_iam_openid_connect_provider.eks.arn]
-      type        = "Federated"
-    }
-  }
-}
 
 resource "aws_iam_role" "efs_csi_driver" {
   name               = "${var.eks_cluster_name}-efs-csi-driver"
-  assume_role_policy = data.aws_iam_policy_document.efs_csi_driver.json
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "efs_csi_driver" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
   role       = aws_iam_role.efs_csi_driver.name
+}
+
+resource "awscc_eks_pod_identity_association" "efs_csi_driver" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "kube-system"
+  service_account = "efs-csi-driver"
+  role_arn        = aws_iam_role.efs_csi_driver.arn
 }
