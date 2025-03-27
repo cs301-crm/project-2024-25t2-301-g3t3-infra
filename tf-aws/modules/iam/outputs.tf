@@ -32,5 +32,5 @@ output "process_monetary_transactions_lambda_role_arn" {
 
 output "efs_csi_driver_arn" {
   description = "ARN of csi driver"
-  value = aws_iam_role.efs_csi_driver.arn
+  value       = aws_iam_role.efs_csi_driver.arn
 }

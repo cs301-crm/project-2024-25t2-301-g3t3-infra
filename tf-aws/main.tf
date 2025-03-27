@@ -23,8 +23,8 @@ module "dynamodb" {
 }
 
 module "efs" {
-  source = "./modules/efs"
-  eks_cluster_sg_id = module.eks.eks_cluster_sg_id
+  source              = "./modules/efs"
+  eks_cluster_sg_id   = module.eks.eks_cluster_sg_id
   private_subnet_1_id = module.vpc.private_subnet_ids[0]
   private_subnet_2_id = module.vpc.private_subnet_ids[1]
 }
@@ -40,17 +40,17 @@ module "eks" {
 }
 
 module "helm" {
-  source            = "./modules/helm"
-  eks_cluster_name  = module.eks.eks_cluster_name
-  eks_private_nodes = module.eks.eks_private_nodes
-  vpc_id            = module.vpc.vpc_id
+  source                  = "./modules/helm"
+  eks_cluster_name        = module.eks.eks_cluster_name
+  eks_private_nodes       = module.eks.eks_private_nodes
+  vpc_id                  = module.vpc.vpc_id
   efs_mount_target_zone_a = module.efs.efs_mount_target_zone_a
   efs_mount_target_zone_b = module.efs.efs_mount_target_zone_b
-  efs_csi_driver_arn = module.iam.efs_csi_driver_arn
+  efs_csi_driver_arn      = module.iam.efs_csi_driver_arn
 }
 
 module "kubernetes" {
-  source = "./modules/kubernetes"
+  source             = "./modules/kubernetes"
   efs_file_system_id = module.efs.efs_file_system_id
 }
 

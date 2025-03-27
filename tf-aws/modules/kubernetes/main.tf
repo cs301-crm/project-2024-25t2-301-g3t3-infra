@@ -52,20 +52,20 @@ resource "kubernetes_cluster_role" "prometheus-k8s" {
 
   rule {
     api_groups = [""]
-    resources = ["services", "endpoints", "pods", "configmaps"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["services", "endpoints", "pods", "configmaps"]
+    verbs      = ["get", "list", "watch"]
   }
 
   rule {
     api_groups = ["extensions", "networking.k8s.io"]
-    resources = ["ingresses"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["ingresses"]
+    verbs      = ["get", "list", "watch"]
   }
 
   rule {
     api_groups = ["discovery.k8s.io"]
-    resources = ["endpointslices"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["endpointslices"]
+    verbs      = ["get", "list", "watch"]
   }
 }
 

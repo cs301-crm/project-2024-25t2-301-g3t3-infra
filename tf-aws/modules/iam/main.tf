@@ -385,7 +385,7 @@ resource "awscc_eks_pod_identity_association" "aws_lbc" {
 }
 
 resource "aws_iam_role" "argocd_image_updater" {
-  name = "${var.eks_cluster_name}-argocd-image-updater"
+  name               = "${var.eks_cluster_name}-argocd-image-updater"
   assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 

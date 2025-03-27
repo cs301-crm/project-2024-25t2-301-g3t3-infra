@@ -110,11 +110,11 @@ resource "helm_release" "cert_manager" {
 resource "helm_release" "prometheus-k8s" {
   name = "prometheus-k8s"
 
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart = "kube-prometheus-stack"
-  namespace = "monitoring"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  namespace        = "monitoring"
   create_namespace = true
-  version = "70.3.0"
+  version          = "70.3.0"
 
   depends_on = [var.eks_private_nodes]
 }
@@ -139,9 +139,9 @@ resource "helm_release" "secrets_csi_driver" {
   name = "secrets-store-csi-driver"
 
   repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
-  chart = "secrets-store-csi-driver"
-  namespace = "kube-system"
-  version = "1.4.8"
+  chart      = "secrets-store-csi-driver"
+  namespace  = "kube-system"
+  version    = "1.4.8"
 
   depends_on = [helm_release.efs_csi_driver]
 }
