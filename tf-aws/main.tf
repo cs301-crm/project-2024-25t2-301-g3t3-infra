@@ -22,6 +22,13 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
+module "efs" {
+  source = "./modules/efs"
+  eks_cluster_sg_id = module.eks.eks_cluster_sg_id
+  private_subnet_1_id = module.vpc.private_subnet_ids[0]
+  private_subnet_2_id = module.vpc.private_subnet_ids[1]
+}
+
 module "eks" {
   source                             = "./modules/eks"
   eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
