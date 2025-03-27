@@ -418,3 +418,39 @@ resource "awscc_eks_pod_identity_association" "efs_csi_driver" {
   service_account = "efs-csi-driver"
   role_arn        = aws_iam_role.efs_csi_driver.arn
 }
+
+
+resource "aws_iam_role" "scrooge_bank_secrets" {
+  name               = "${var.eks_cluster_name}-scrooge_bank_secrets"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
+}
+
+resource "aws_iam_policy" "scrooge_bank_secrets" {
+  name = "${var.eks_cluster_name}-scrooge_bank_secrets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "scrooge_bank_secrets" {
+  policy_arn = aws_iam_policy.scrooge_bank_secrets.arn
+  role       = aws_iam_role.scrooge_bank_secrets.name
+}
+
+resource "awscc_eks_pod_identity_association" "scrooge_bank_secrets" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "default"
+  service_account = "scrooge-bank-prod"
+  role_arn        = aws_iam_role.scrooge_bank_secrets.arn
+}
