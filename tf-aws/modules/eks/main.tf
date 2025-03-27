@@ -24,7 +24,7 @@ resource "aws_eks_node_group" "private-nodes" {
   subnet_ids = var.private_subnet_ids
 
   capacity_type  = "ON_DEMAND"
-  instance_types = ["c5.xlarge"]
+  instance_types = ["t3.medium"]
 
   # eks cluster does not autoscale, this will create aws asgs
   scaling_config {
@@ -48,4 +48,14 @@ resource "aws_eks_addon" "pod_identity" {
   cluster_name  = aws_eks_cluster.prod.name
   addon_name    = "eks-pod-identity-agent"
   addon_version = "v1.3.5-eksbuild.2"
+}
+
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.prod.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.prod.identity[0].oidc[0].issuer
 }
