@@ -12,3 +12,9 @@ output "eks_cluster_sg_id" {
   description = "Cluster security group of EKS"
   value = aws_eks_cluster.prod.vpc_config[0].cluster_security_group_id
 }
+
+output "eks_openid_connect_issuer_url" {
+  description = "OIDC provider for hooking of EKS"
+  value = aws_eks_cluster.prod.identity[0].oidc[0].issuer
+}
+
