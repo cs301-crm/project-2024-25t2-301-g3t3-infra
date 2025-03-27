@@ -14,6 +14,10 @@ variable "efs_csi_driver_arn" {
   description = "ARN of CSI driver"
 }
 
-variable "efs_mount_targets" {
-  description = "List of mount target zones"
+variable "efs_mount_target_zone_a" {
+  description = "Mount target zone a"
+}
+
+variable "efs_mount_target_zone_b" {
+  description = "Mount target zone a"
 }

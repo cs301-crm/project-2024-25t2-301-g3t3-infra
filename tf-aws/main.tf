@@ -44,10 +44,14 @@ module "helm" {
   eks_cluster_name  = module.eks.eks_cluster_name
   eks_private_nodes = module.eks.eks_private_nodes
   vpc_id            = module.vpc.vpc_id
+  efs_mount_target_zone_a = module.efs.efs_mount_target_zone_a
+  efs_mount_target_zone_b = module.efs.efs_mount_target_zone_b
+  efs_csi_driver_arn = module.iam.efs_csi_driver_arn
 }
 
 module "kubernetes" {
   source = "./modules/kubernetes"
+  efs_file_system_id = module.efs.efs_file_system_id
 }
 
 module "rds-aurora" {

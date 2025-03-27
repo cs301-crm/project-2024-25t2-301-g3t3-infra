@@ -132,7 +132,7 @@ resource "helm_release" "efs_csi_driver" {
     value = var.efs_csi_driver_arn
   }
 
-  depends_on = var.efs_mount_targets
+  depends_on = [var.efs_mount_target_zone_a, var.efs_mount_target_zone_b]
 }
 
 resource "helm_release" "secrets_csi_driver" {
