@@ -22,6 +22,10 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
+module "glue" {
+  source = "./modules/glue"
+}
+  
 module "eks" {
   source                             = "./modules/eks"
   eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
