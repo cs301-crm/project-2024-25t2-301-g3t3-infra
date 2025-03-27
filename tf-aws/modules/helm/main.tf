@@ -118,3 +118,19 @@ resource "helm_release" "prometheus-k8s" {
 
   depends_on = [var.eks_private_nodes]
 }
+
+resource "helm_release" "efs_csi_driver" {
+  name = "aws-efs-csi-driver"
+
+  repository = "https://kubernetes-sigs.github.io/aws-efs-csi-driver"
+  chart      = "aws-efs-csi-driver"
+  namespace  = "kube-system"
+  version    = "3.1.8"
+
+  set {
+    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = var.efs_csi_driver_arn
+  }
+
+  depends_on = var.efs_mount_targets
+}
