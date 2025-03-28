@@ -9,3 +9,11 @@ variable "eks_private_nodes" {
 variable "vpc_id" {
   description = "Id of VPC"
 }
+
+variable "efs_mount_target_zone_a" {
+  description = "Mount target zone a"
+}
+
+variable "efs_mount_target_zone_b" {
+  description = "Mount target zone a"
+}

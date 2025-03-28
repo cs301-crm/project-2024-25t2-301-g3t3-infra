@@ -283,13 +283,13 @@ resource "aws_iam_policy" "eks_assume_admin" {
 }
 
 resource "aws_iam_user_policy_attachment" "manager" {
-  user = aws_iam_user.manager.name
+  user       = aws_iam_user.manager.name
   policy_arn = aws_iam_policy.eks_assume_admin.arn
 }
 
 resource "aws_eks_access_entry" "admin" {
-  cluster_name = var.eks_cluster_name
-  principal_arn = aws_iam_role.eks_admin.arn
+  cluster_name      = var.eks_cluster_name
+  principal_arn     = aws_iam_role.eks_admin.arn
   kubernetes_groups = ["eks-admin"]
 }
 
@@ -304,7 +304,7 @@ data "aws_iam_policy_document" "pod_assume_policy" {
 
     principals {
       identifiers = ["pods.eks.amazonaws.com"]
-      type = "Service"
+      type        = "Service"
     }
   }
 }
@@ -345,13 +345,13 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.eks_cluster_name}-cluster-autoscaler"
+  name               = "${var.eks_cluster_name}-cluster-autoscaler"
   assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   policy_arn = aws_iam_policy.cluster_autoscaler.arn
-  role = aws_iam_role.cluster_autoscaler.name
+  role       = aws_iam_role.cluster_autoscaler.name
 }
 
 resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
@@ -363,12 +363,12 @@ resource "awscc_eks_pod_identity_association" "cluster_autoscaler" {
 
 # EKS LBC
 resource "aws_iam_policy" "aws_lbc" {
-  name = "AWSLoadBalancerController"
+  name   = "AWSLoadBalancerController"
   policy = file("${path.module}/policies/AWSLoadBalancerController.json")
 }
 
 resource "aws_iam_role" "aws_lbc" {
-  name = "${var.eks_cluster_name}-aws-lbc"
+  name               = "${var.eks_cluster_name}-aws-lbc"
   assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
@@ -385,22 +385,8 @@ resource "awscc_eks_pod_identity_association" "aws_lbc" {
 }
 
 resource "aws_iam_role" "argocd_image_updater" {
-  name = "${var.eks_cluster_name}-argocd-image-updater"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-        Principal = {
-          Service = "pods.eks.amazonaws.com"
-        }
-      },
-    ]
-  })
+  name               = "${var.eks_cluster_name}-argocd-image-updater"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "argocd_image_updater" {
@@ -413,4 +399,59 @@ resource "aws_eks_pod_identity_association" "argocd_image_updater" {
   namespace       = "argocd"
   service_account = "argocd-image-updater"
   role_arn        = aws_iam_role.argocd_image_updater.arn
+}
+
+
+resource "aws_iam_role" "efs_csi_driver" {
+  name               = "${var.eks_cluster_name}-efs-csi-driver"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "efs_csi_driver" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+  role       = aws_iam_role.efs_csi_driver.name
+}
+
+resource "awscc_eks_pod_identity_association" "efs_csi_driver" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "kube-system"
+  service_account = "efs-csi-driver-controller-sa"
+  role_arn        = aws_iam_role.efs_csi_driver.arn
+}
+
+
+resource "aws_iam_role" "scrooge_bank_secrets" {
+  name               = "${var.eks_cluster_name}-scrooge_bank_secrets"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_policy.json
+}
+
+resource "aws_iam_policy" "scrooge_bank_secrets" {
+  name = "${var.eks_cluster_name}-scrooge-bank-secrets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "scrooge_bank_secrets" {
+  policy_arn = aws_iam_policy.scrooge_bank_secrets.arn
+  role       = aws_iam_role.scrooge_bank_secrets.name
+}
+
+resource "awscc_eks_pod_identity_association" "scrooge_bank_secrets" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "default"
+  service_account = "scrooge-bank-secrets"
+  role_arn        = aws_iam_role.scrooge_bank_secrets.arn
 }
