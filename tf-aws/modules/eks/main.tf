@@ -24,7 +24,7 @@ resource "aws_eks_node_group" "private-nodes" {
   subnet_ids = var.private_subnet_ids
 
   capacity_type  = "ON_DEMAND"
-  instance_types = ["c5.xlarge"]
+  instance_types = ["t3.xlarge"]
 
   # eks cluster does not autoscale, this will create aws asgs
   scaling_config {

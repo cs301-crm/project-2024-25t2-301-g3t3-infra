@@ -52,20 +52,20 @@ resource "kubernetes_cluster_role" "prometheus-k8s" {
 
   rule {
     api_groups = [""]
-    resources = ["services", "endpoints", "pods", "configmaps"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["services", "endpoints", "pods", "configmaps"]
+    verbs      = ["get", "list", "watch"]
   }
 
   rule {
     api_groups = ["extensions", "networking.k8s.io"]
-    resources = ["ingresses"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["ingresses"]
+    verbs      = ["get", "list", "watch"]
   }
 
   rule {
     api_groups = ["discovery.k8s.io"]
-    resources = ["endpointslices"]
-    verbs = ["get", "list", "watch"]
+    resources  = ["endpointslices"]
+    verbs      = ["get", "list", "watch"]
   }
 }
 
@@ -83,6 +83,22 @@ resource "kubernetes_cluster_role_binding" "prometheus-k8s" {
   subject {
     kind      = "ServiceAccount"
     name      = "prometheus-k8s"
-    api_group = "rbac.authorization.k8s.io"
+    api_group = ""
   }
+}
+
+resource "kubernetes_storage_class_v1" "efs" {
+  metadata {
+    name = "efs"
+  }
+
+  storage_provisioner = "efs.csi.aws.com"
+
+  parameters = {
+    provisioningMode = "efs-ap"
+    fileSystemId     = var.efs_file_system_id
+    directoryPerms   = "700"
+  }
+
+  mount_options = ["iam"]
 }
