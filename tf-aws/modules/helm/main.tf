@@ -127,11 +127,6 @@ resource "helm_release" "efs_csi_driver" {
   namespace  = "kube-system"
   version    = "3.1.8"
 
-  set {
-    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = var.efs_csi_driver_arn
-  }
-
   depends_on = [var.efs_mount_target_zone_a, var.efs_mount_target_zone_b]
 }
 

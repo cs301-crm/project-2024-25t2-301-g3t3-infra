@@ -10,10 +10,6 @@ variable "vpc_id" {
   description = "Id of VPC"
 }
 
-variable "efs_csi_driver_arn" {
-  description = "ARN of CSI driver"
-}
-
 variable "efs_mount_target_zone_a" {
   description = "Mount target zone a"
 }

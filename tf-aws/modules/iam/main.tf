@@ -415,7 +415,7 @@ resource "aws_iam_role_policy_attachment" "efs_csi_driver" {
 resource "awscc_eks_pod_identity_association" "efs_csi_driver" {
   cluster_name    = var.eks_cluster_name
   namespace       = "kube-system"
-  service_account = "efs-csi-driver"
+  service_account = "efs-csi-driver-controller-sa"
   role_arn        = aws_iam_role.efs_csi_driver.arn
 }
 
@@ -426,7 +426,7 @@ resource "aws_iam_role" "scrooge_bank_secrets" {
 }
 
 resource "aws_iam_policy" "scrooge_bank_secrets" {
-  name = "${var.eks_cluster_name}-scrooge_bank_secrets"
+  name = "${var.eks_cluster_name}-scrooge-bank-secrets"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -435,7 +435,8 @@ resource "aws_iam_policy" "scrooge_bank_secrets" {
         Effect = "Allow"
         Action = [
           "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
+          "secretsmanager:DescribeSecret",
+          "kms:Decrypt"
         ]
         Resource = "*"
       }
@@ -451,6 +452,6 @@ resource "aws_iam_role_policy_attachment" "scrooge_bank_secrets" {
 resource "awscc_eks_pod_identity_association" "scrooge_bank_secrets" {
   cluster_name    = var.eks_cluster_name
   namespace       = "default"
-  service_account = "scrooge-bank-prod"
+  service_account = "scrooge-bank-secrets"
   role_arn        = aws_iam_role.scrooge_bank_secrets.arn
 }

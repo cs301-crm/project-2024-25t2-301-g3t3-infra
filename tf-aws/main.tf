@@ -46,7 +46,6 @@ module "helm" {
   vpc_id                  = module.vpc.vpc_id
   efs_mount_target_zone_a = module.efs.efs_mount_target_zone_a
   efs_mount_target_zone_b = module.efs.efs_mount_target_zone_b
-  efs_csi_driver_arn      = module.iam.efs_csi_driver_arn
 }
 
 module "kubernetes" {
