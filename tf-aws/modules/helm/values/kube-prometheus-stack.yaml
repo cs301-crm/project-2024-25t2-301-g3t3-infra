@@ -1,6 +1,12 @@
 ---
-prometheusSpec:
-  podMonitorSelectorNilUsesHelmValues: false
-  serviceMonitorSelectorNilUsesHelmValues: false
-prometheusConfigReloader:
-  enableProbe: true
+prometheus:
+  prometheusOperator:
+    prometheusConfigReloader:
+      enableProbe: true
+      resources:
+        requests:
+          cpu: 200m
+          memory: 50Mi
+        limits:
+          cpu: 200m
+          memory: 50Mi
