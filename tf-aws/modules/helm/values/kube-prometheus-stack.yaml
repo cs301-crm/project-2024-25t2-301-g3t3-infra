@@ -1,0 +1,4 @@
+---
+prometheusSpec:
+  podMonitorSelectorNilUsesHelmValues: false
+  serviceMonitorSelectorNilUsesHelmValues: false
