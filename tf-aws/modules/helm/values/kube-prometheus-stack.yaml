@@ -2,3 +2,5 @@
 prometheusSpec:
   podMonitorSelectorNilUsesHelmValues: false
   serviceMonitorSelectorNilUsesHelmValues: false
+prometheusConfigReloader:
+  enableProbe: true
