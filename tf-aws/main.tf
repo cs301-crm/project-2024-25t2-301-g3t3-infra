@@ -70,14 +70,14 @@ module "transfer_family" {
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
 }
 
-module "lambda_process_monetary_transactions" {
-  source                                        = "./modules/lambda_process_monetary_transactions"
-  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  private_subnet_ids                            = module.vpc.private_subnet_ids
-  lambda_sg_id                                  = module.vpc.lambda_sg_id
-  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
-}
+# module "lambda_process_monetary_transactions" {
+#   source                                        = "./modules/lambda_process_monetary_transactions"
+#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+#   private_subnet_ids                            = module.vpc.private_subnet_ids
+#   lambda_sg_id                                  = module.vpc.lambda_sg_id
+#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+# }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"

@@ -1,0 +1,12 @@
+---
+prometheus:
+  prometheusOperator:
+    prometheusConfigReloader:
+      enableProbe: true
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 400m
+          memory: 1Gi

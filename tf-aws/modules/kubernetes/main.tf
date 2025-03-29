@@ -45,14 +45,60 @@ resource "kubernetes_cluster_role_binding" "eks_admin_binding" {
   }
 }
 
-resource "kubernetes_cluster_role" "prometheus-k8s" {
+# ClusterRole for ServiceMonitor access
+resource "kubernetes_cluster_role" "prometheus_servicemonitor_full_access" {
   metadata {
-    name = "prometheus-k8s"
+    name = "prometheus-servicemonitor-full-access"
+  }
+
+  rule {
+    api_groups = ["monitoring.coreos.com"]
+    resources  = ["servicemonitors"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = ["monitoring.coreos.com"]
+    resources  = ["prometheusrules"]
+    verbs      = ["get", "list", "watch"]
   }
 
   rule {
     api_groups = [""]
-    resources  = ["services", "endpoints", "pods", "configmaps"]
+    resources  = ["services", "endpoints", "pods"]
+    verbs      = ["get", "list", "watch"]
+  }
+}
+
+# ClusterRoleBinding for ServiceMonitor access
+resource "kubernetes_cluster_role_binding" "prometheus_servicemonitor_full_access" {
+  metadata {
+    name = "prometheus-servicemonitor-full-access"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.prometheus_servicemonitor_full_access.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "prometheus-k8s-kube-promet-prometheus"
+    namespace = "monitoring"
+  }
+}
+
+# Role for Prometheus in default namespace
+resource "kubernetes_role" "prometheus_k8s" {
+  metadata {
+    name      = "prometheus-k8s"
+    namespace = "default"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["services", "endpoints", "pods"]
     verbs      = ["get", "list", "watch"]
   }
 
@@ -63,42 +109,34 @@ resource "kubernetes_cluster_role" "prometheus-k8s" {
   }
 
   rule {
+    api_groups = [""]
+    resources  = ["configmaps"]
+    verbs      = ["get"]
+  }
+
+  rule {
     api_groups = ["discovery.k8s.io"]
     resources  = ["endpointslices"]
     verbs      = ["get", "list", "watch"]
   }
 }
 
-resource "kubernetes_cluster_role_binding" "prometheus-k8s" {
+# RoleBinding for Prometheus in default namespace
+resource "kubernetes_role_binding" "prometheus_k8s" {
   metadata {
-    name = "prometheus-k8s-binding"
+    name      = "prometheus-k8s"
+    namespace = "default"
   }
 
   role_ref {
     api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "prometheus-k8s"
+    kind      = "Role"
+    name      = kubernetes_role.prometheus_k8s.metadata[0].name
   }
 
   subject {
     kind      = "ServiceAccount"
     name      = "prometheus-k8s"
-    api_group = ""
+    namespace = "monitoring"
   }
-}
-
-resource "kubernetes_storage_class_v1" "efs" {
-  metadata {
-    name = "efs"
-  }
-
-  storage_provisioner = "efs.csi.aws.com"
-
-  parameters = {
-    provisioningMode = "efs-ap"
-    fileSystemId     = var.efs_file_system_id
-    directoryPerms   = "700"
-  }
-
-  mount_options = ["iam"]
 }

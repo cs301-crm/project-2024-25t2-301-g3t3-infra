@@ -116,6 +116,8 @@ resource "helm_release" "prometheus-k8s" {
   create_namespace = true
   version          = "70.3.0"
 
+  values = [file("${path.module}/values/kube-prometheus-stack.yaml")]
+
   depends_on = [var.eks_private_nodes]
 }
 
