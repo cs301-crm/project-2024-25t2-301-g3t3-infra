@@ -62,6 +62,7 @@ module "rds-aurora" {
 
 module "s3" {
   source = "./modules/s3"
+  sftp_lambda_arn = module.lambda_process_monetary_transactions.process_monetary_transactions_lambda_arn
 }
 
 module "transfer_family" {

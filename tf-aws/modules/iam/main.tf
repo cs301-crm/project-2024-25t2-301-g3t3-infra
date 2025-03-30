@@ -31,10 +31,10 @@ resource "aws_iam_role_policy" "sftp_user_policy" {
       {
         Effect = "Allow"
         Action = [
-          "s3:ListBucket",
+          # "s3:ListBucket",
           "s3:GetObject",
           "s3:PutObject",
-          "s3:DeleteObject"
+          # "s3:DeleteObject"
         ]
         Resource = [
           var.sftp_bucket_arn,
@@ -46,74 +46,91 @@ resource "aws_iam_role_policy" "sftp_user_policy" {
 }
 
 # IAM for writing into user table in RDS
-resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
-  name = "process_monetary_transactions_lambda_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
+data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "rds-db:connect"
     ]
-  })
+    resources = [
+      var.user_aurora_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      var.aurora_kms_key_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      var.user_aurora_secret_arn
+    ]
+  }
+
 }
 
-resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
-  name = "process_monetary_transactions_lambda_policy"
-  role = aws_iam_role.process_monetary_transactions_lambda_role.id
+resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
+  name               = "process_monetary_transactions_lambda_role"
+  assume_role_policy = data.aws_iam_policy_document.process_monetary_transactions_lambda_policy_document.json
+}
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "rds-db:connect",
-        ]
-        Resource = [
-          "${var.user_aurora_arn}"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kms:Decrypt"
-        ]
-        Resource = var.aurora_kms_key_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = var.user_aurora_secret_arn
-      }
-    ]
-  })
+resource "aws_lambda_permission" "allow_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.process_monetary_transactions_lambda.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = var.sftp_bucket_arn
+
+  depends_on = [ aws_iam_role.process_monetary_transactions_lambda_role ]
+}
+
+resource "aws_lambda_function" "process_monetary_transactions_lambda" {
+  filename      = "dummy.zip"
+  function_name = "process_monetary_transactions"
+  role          = aws_iam_role.process_monetary_transactions_lambda_role.arn
+  handler       = "exports.example"
+  runtime       = "python3.13"
 }
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
