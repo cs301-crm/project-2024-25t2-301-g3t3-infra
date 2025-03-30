@@ -27,11 +27,24 @@ resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
 
 resource "aws_iam_role" "transfer_s3_role" {
   name = "transfer_s3_role"
-  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
-}
-resource "aws_iam_role_policy_attachment" "iam_for_transfer_s3" {
-  role       = aws_iam_role.transfer_s3_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket",
+        ]
+        Resource = [
+          var.sftp_bucket_arn,
+          "${var.sftp_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
 }
 
 # IAM for monetary_transactions lambda
