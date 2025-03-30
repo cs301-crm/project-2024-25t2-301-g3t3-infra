@@ -11,8 +11,8 @@ resource "aws_rds_cluster" "main" {
   master_username               = "test"
   master_user_secret_kms_key_id = var.aurora_kms_key_id
   skip_final_snapshot           = false
-  final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
-  snapshot_identifier           = "has-mock-data"
+  # final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
+  # snapshot_identifier           = "has-mock-data"
   backup_retention_period       = 5
   preferred_backup_window       = "07:00-09:00"
   # apply_immediately      = true
