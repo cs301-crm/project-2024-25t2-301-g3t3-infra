@@ -33,3 +33,7 @@ output "transfer_logging_role" {
 output "transfer_s3_role" {
   value = aws_iam_role.transfer_s3_role.arn
 }
+
+output "external_server_transfer_role_arn" {
+  value = aws_iam_role.external_server_transfer_role.arn
+}

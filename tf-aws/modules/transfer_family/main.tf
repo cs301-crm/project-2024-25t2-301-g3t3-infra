@@ -21,12 +21,18 @@ resource "aws_transfer_server" "sftp_server" {
   }
 }
 
-# resource "aws_transfer_user" "sftp_user" {
-#   server_id      = aws_transfer_server.sftp_server.id
-#   user_name      = "sftp_user"
-#   role           = var.sftp_user_role_arn
-#   home_directory = "/${var.sftp_transaction_bucket_name}/monetary_transactions"
-# }
+resource "aws_transfer_user" "sftp_user" {
+  server_id = aws_transfer_server.sftp_server.id
+  user_name = "mock-external-server"
+  role      =  var.external_server_transfer_role_arn
+
+  home_directory_type = "LOGICAL"
+  home_directory_mappings {
+    entry = "/"
+    target = "/monetary_transactions"
+  }
+  home_directory = "/${var.sftp_transaction_bucket_name}/"
+}
 
 resource "aws_transfer_workflow" "sftp_workflow" {
   steps {

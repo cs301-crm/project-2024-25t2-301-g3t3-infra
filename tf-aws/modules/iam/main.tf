@@ -51,8 +51,20 @@ resource "aws_iam_role" "transfer_s3_role" {
   assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
 }
 
+# IAM for Transfer Family user (external sftp server)
+resource "aws_iam_role" "external_server_transfer_role" {
+  name               = "external_server_transfer_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role_policy" "external_server_transfer_policy" {
+  name   = "test-transfer-user-iam-policy"
+  role   = aws_iam_role.external_server_transfer_role.id
+  policy = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
 # IAM for monetary_transactions lambda
-data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy_document" {
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
   statement {
     effect = "Allow"
     principals {
@@ -61,7 +73,9 @@ data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy_docu
     }
     actions = ["sts:AssumeRole"]
   }
+}
 
+data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
@@ -113,12 +127,22 @@ data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy_docu
       var.user_aurora_secret_arn
     ]
   }
+}
 
+resource "aws_iam_policy" "process_monetary_transactions_lambda_policy" {
+  name        = "process_monetary_transactions_lambda_policy"
+  description = "Policy for monetary_transactions lambda"
+  policy      = data.aws_iam_policy_document.process_monetary_transactions_lambda_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_process_monetary_transactions_lambda" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = aws_iam_policy.process_monetary_transactions_lambda_policy.arn
 }
 
 resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
   name               = "process_monetary_transactions_lambda_role"
-  assume_role_policy = data.aws_iam_policy_document.process_monetary_transactions_lambda_policy_document.json
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
 }
 
 resource "aws_lambda_permission" "allow_bucket" {
