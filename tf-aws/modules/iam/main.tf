@@ -1,8 +1,3 @@
-variable "sftp_bucket_arn" {}
-variable "user_aurora_arn" {}
-variable "aurora_kms_key_arn" {}
-variable "user_aurora_secret_arn" {}
-
 # IAM for Transfer Family server
 data "aws_iam_policy_document" "transfer_assume_role" {
   statement {
@@ -16,8 +11,8 @@ data "aws_iam_policy_document" "transfer_assume_role" {
 }
 
 resource "aws_iam_role" "transfer_logging_role" {
-  name = "transfer_logging_role"
-  assume_role_policy  = data.aws_iam_policy_document.transfer_assume_role.json
+  name               = "transfer_logging_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
@@ -124,7 +119,7 @@ resource "aws_lambda_permission" "allow_bucket" {
   principal     = "s3.amazonaws.com"
   source_arn    = var.sftp_bucket_arn
 
-  depends_on = [ aws_iam_role.process_monetary_transactions_lambda_role ]
+  depends_on = [aws_iam_role.process_monetary_transactions_lambda_role]
 }
 
 resource "aws_lambda_function" "process_monetary_transactions_lambda" {

@@ -1,12 +1,8 @@
-variable "sftp_transaction_bucket_name" {}
-variable "transfer_logging_role" {}
-variable "transfer_s3_role" {}
-
 resource "aws_transfer_server" "sftp_server" {
   identity_provider_type = "SERVICE_MANAGED" # TODO: I think can change to lambda after it's provisioned... need test
   endpoint_type          = "PUBLIC"
   protocols              = ["SFTP"]
-  domain = "S3"
+  domain                 = "S3"
 
   logging_role = var.transfer_logging_role
   structured_log_destinations = [
@@ -16,7 +12,7 @@ resource "aws_transfer_server" "sftp_server" {
   workflow_details {
     on_upload {
       execution_role = var.transfer_s3_role
-      workflow_id = aws_transfer_workflow.sftp_workflow.id
+      workflow_id    = aws_transfer_workflow.sftp_workflow.id
     }
   }
 
@@ -39,9 +35,9 @@ resource "aws_transfer_workflow" "sftp_workflow" {
       destination_file_location {
         s3_file_location {
           bucket = var.sftp_transaction_bucket_name
-          key = "monetary_transactions/"
+          key    = "monetary_transactions/"
         }
-      } 
+      }
       overwrite_existing = "FALSE" # cuz is a bank we want to keep the real shi
     }
     type = "COPY"
@@ -49,6 +45,6 @@ resource "aws_transfer_workflow" "sftp_workflow" {
 }
 
 resource "aws_cloudwatch_log_group" "transfer" {
-    name_prefix = "transfer_mt_"
+  name_prefix = "transfer_mt_"
 }
 

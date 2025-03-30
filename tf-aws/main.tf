@@ -61,15 +61,15 @@ module "rds-aurora" {
 }
 
 module "s3" {
-  source = "./modules/s3"
+  source          = "./modules/s3"
   sftp_lambda_arn = module.lambda_process_monetary_transactions.process_monetary_transactions_lambda_arn
 }
 
 module "transfer_family" {
   source                       = "./modules/transfer_family"
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
-  transfer_logging_role = module.iam.transfer_logging_role
-  transfer_s3_role = module.iam.transfer_s3_role
+  transfer_logging_role        = module.iam.transfer_logging_role
+  transfer_s3_role             = module.iam.transfer_s3_role
 }
 
 module "lambda_process_monetary_transactions" {
