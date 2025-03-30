@@ -5,7 +5,7 @@ data "archive_file" "dummy_zip" {
 }
 
 resource "aws_lambda_function" "process_monetary_transactions" {
-  function_name = "process_monetary_transactions"
+  function_name = "process_monetary_transactions_lambda"
   role          = var.process_monetary_transactions_lambda_role_arn
   handler       = "process_monetary_transactions.lambda_handler"
   runtime       = "python3.13"
