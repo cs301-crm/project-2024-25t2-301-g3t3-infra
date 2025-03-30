@@ -3,49 +3,38 @@ variable "user_aurora_arn" {}
 variable "aurora_kms_key_arn" {}
 variable "user_aurora_secret_arn" {}
 
-# IAM for Transfer Family user
-resource "aws_iam_role" "sftp_user_role" {
-  name = "sftp_user_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "transfer.amazonaws.com"
-        }
-      }
-    ]
-  })
+# IAM for Transfer Family server
+data "aws_iam_policy_document" "transfer_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["transfer.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
 }
 
-resource "aws_iam_role_policy" "sftp_user_policy" {
-  name = "sftp_user_policy"
-  role = aws_iam_role.sftp_user_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          # "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject",
-          # "s3:DeleteObject"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      }
-    ]
-  })
+resource "aws_iam_role" "transfer_logging_role" {
+  name = "transfer_logging_role"
+  assume_role_policy  = data.aws_iam_policy_document.transfer_assume_role.json
 }
 
-# IAM for writing into user table in RDS
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
+  role       = aws_iam_role.transfer_logging_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
+}
+
+resource "aws_iam_role" "transfer_s3_role" {
+  name = "transfer_s3_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_s3" {
+  role       = aws_iam_role.transfer_s3_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+# IAM for monetary_transactions lambda
 data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy_document" {
   statement {
     effect = "Allow"

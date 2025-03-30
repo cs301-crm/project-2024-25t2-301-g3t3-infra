@@ -67,8 +67,9 @@ module "s3" {
 
 module "transfer_family" {
   source                       = "./modules/transfer_family"
-  sftp_user_role_arn           = module.iam.sftp_user_role_arn
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
+  transfer_logging_role = module.iam.transfer_logging_role
+  transfer_s3_role = module.iam.transfer_s3_role
 }
 
 module "lambda_process_monetary_transactions" {

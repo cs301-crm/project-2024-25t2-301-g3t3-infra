@@ -22,10 +22,14 @@ output "eks_node_role_policy_attachments" {
   ]
 }
 
-output "sftp_user_role_arn" {
-  value = aws_iam_role.sftp_user_role.arn
-}
-
 output "process_monetary_transactions_lambda_role_arn" {
   value = aws_iam_role.process_monetary_transactions_lambda_role.arn
+}
+
+output "transfer_logging_role" {
+  value = aws_iam_role.transfer_logging_role.arn
+}
+
+output "transfer_s3_role" {
+  value = aws_iam_role.transfer_s3_role.arn
 }
