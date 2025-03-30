@@ -1,7 +1,7 @@
-resource "null_resource" "create_dummy_zip" {
-  provisioner "local-exec" {
-    command = "echo 'This is a dummy file' > dummy.txt && zip dummy.zip dummy.txt"
-  }
+data "archive_file" "dummy_zip" {
+  type        = "zip"
+  source_file = "dummy.py"
+  output_path = "dummy.zip"
 }
 
 resource "aws_lambda_function" "process_monetary_transactions" {
@@ -10,6 +10,7 @@ resource "aws_lambda_function" "process_monetary_transactions" {
   handler       = "process_monetary_transactions.lambda_handler"
   runtime       = "python3.13"
   filename      = "dummy.zip" # Dummy file, the actual zip file will be uploaded in the lambda repo
+  source_code_hash = data.archive_file.dummy_zip.output_base64sha256
   timeout       = 60
   environment {
     variables = {
@@ -21,7 +22,6 @@ resource "aws_lambda_function" "process_monetary_transactions" {
     security_group_ids = [var.lambda_sg_id]
   }
 
-  depends_on = [null_resource.create_dummy_zip]
 }
 
 resource "aws_lambda_permission" "s3_trigger" {

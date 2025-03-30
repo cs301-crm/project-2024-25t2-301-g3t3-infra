@@ -20,26 +20,35 @@ resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
 }
 
-resource "aws_iam_role" "transfer_s3_role" {
-  name = "transfer_s3_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:ListBucket",
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      }
+data "aws_iam_policy_document" "transfer_s3_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:ListBucket",
     ]
-  })
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "transfer_s3_policy" {
+  name        = "transfer_s3_policy"
+  description = "Policy for transfer s3 role"
+  policy      = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_s3" {
+  role       = aws_iam_role.transfer_s3_role.name
+  policy_arn = aws_iam_policy.transfer_s3_policy.arn
+}
+
+resource "aws_iam_role" "transfer_s3_role" {
+  name               = "transfer_s3_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
 }
 
 # IAM for monetary_transactions lambda

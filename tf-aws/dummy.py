@@ -1,0 +1,1 @@
+print("Jam a man of fortune")
