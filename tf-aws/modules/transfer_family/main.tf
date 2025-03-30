@@ -28,10 +28,10 @@ resource "aws_transfer_user" "sftp_user" {
 
   home_directory_type = "LOGICAL"
   home_directory_mappings {
-    entry = "/"
+    entry = "/${var.sftp_transaction_bucket_name}/"
     target = "/monetary_transactions"
   }
-  home_directory = "/${var.sftp_transaction_bucket_name}/"
+
 }
 
 resource "aws_transfer_workflow" "sftp_workflow" {
@@ -54,3 +54,13 @@ resource "aws_cloudwatch_log_group" "transfer" {
   name_prefix = "transfer_mt_"
 }
 
+resource "tls_private_key" "transfer" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "aws_transfer_ssh_key" "example" {
+  server_id = aws_transfer_server.sftp_server.id
+  user_name = aws_transfer_user.sftp_user.user_name
+  body      = trimspace(tls_private_key.transfer.public_key_openssh)
+}
