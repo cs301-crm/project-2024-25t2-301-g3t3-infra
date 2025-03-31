@@ -25,7 +25,14 @@ module "dynamodb" {
 module "glue" {
   source = "./modules/glue"
 }
-  
+
+module "efs" {
+  source              = "./modules/efs"
+  eks_cluster_sg_id   = module.eks.eks_cluster_sg_id
+  private_subnet_1_id = module.vpc.private_subnet_ids[0]
+  private_subnet_2_id = module.vpc.private_subnet_ids[1]
+}
+
 module "eks" {
   source                             = "./modules/eks"
   eks_cluster_role_arn               = module.iam.eks_cluster_role_arn
@@ -37,14 +44,17 @@ module "eks" {
 }
 
 module "helm" {
-  source            = "./modules/helm"
-  eks_cluster_name  = module.eks.eks_cluster_name
-  eks_private_nodes = module.eks.eks_private_nodes
-  vpc_id            = module.vpc.vpc_id
+  source                  = "./modules/helm"
+  eks_cluster_name        = module.eks.eks_cluster_name
+  eks_private_nodes       = module.eks.eks_private_nodes
+  vpc_id                  = module.vpc.vpc_id
+  efs_mount_target_zone_a = module.efs.efs_mount_target_zone_a
+  efs_mount_target_zone_b = module.efs.efs_mount_target_zone_b
 }
 
 module "kubernetes" {
-  source = "./modules/kubernetes"
+  source             = "./modules/kubernetes"
+  efs_file_system_id = module.efs.efs_file_system_id
 }
 
 module "rds-aurora" {
@@ -64,14 +74,14 @@ module "transfer_family" {
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
 }
 
-module "lambda_process_monetary_transactions" {
-  source                                        = "./modules/lambda_process_monetary_transactions"
-  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  private_subnet_ids                            = module.vpc.private_subnet_ids
-  lambda_sg_id                                  = module.vpc.lambda_sg_id
-  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
-}
+# module "lambda_process_monetary_transactions" {
+#   source                                        = "./modules/lambda_process_monetary_transactions"
+#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+#   private_subnet_ids                            = module.vpc.private_subnet_ids
+#   lambda_sg_id                                  = module.vpc.lambda_sg_id
+#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+# }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
