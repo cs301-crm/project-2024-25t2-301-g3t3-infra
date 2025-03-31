@@ -88,3 +88,7 @@ module "bastion_ec2" {
   public_subnet_id = module.vpc.public_subnet_ids[0]
   bastion_sg       = module.vpc.bastion_sg_id
 }
+
+module "amplify" {
+  source = "./modules/amplify"
+}
