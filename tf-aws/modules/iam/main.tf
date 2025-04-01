@@ -149,19 +149,11 @@ resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
 resource "aws_lambda_permission" "allow_bucket" {
   statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.process_monetary_transactions_lambda.arn
+  function_name = var.lambda_process_monetary_transactions_arn
   principal     = "s3.amazonaws.com"
   source_arn    = var.sftp_bucket_arn
 
   depends_on = [aws_iam_role.process_monetary_transactions_lambda_role]
-}
-
-resource "aws_lambda_function" "process_monetary_transactions_lambda" {
-  filename      = "dummy.zip"
-  function_name = "process_monetary_transactions"
-  role          = aws_iam_role.process_monetary_transactions_lambda_role.arn
-  handler       = "exports.example"
-  runtime       = "python3.13"
 }
 
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {

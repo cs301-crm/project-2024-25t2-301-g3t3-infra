@@ -24,11 +24,11 @@ resource "aws_transfer_server" "sftp_server" {
 resource "aws_transfer_user" "sftp_user" {
   server_id = aws_transfer_server.sftp_server.id
   user_name = "mock-external-server"
-  role      =  var.external_server_transfer_role_arn
+  role      = var.external_server_transfer_role_arn
 
   home_directory_type = "LOGICAL"
   home_directory_mappings {
-    entry = "/"
+    entry  = "/"
     target = "/${var.sftp_transaction_bucket_name}/monetary_transactions" // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-transfer-user.html
   }
 
