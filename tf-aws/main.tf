@@ -10,6 +10,7 @@ module "iam" {
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
   user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
   eks_cluster_name       = module.eks.eks_cluster_name
+  msk_cluster_arn = module.msk.msk_cluster_arn
 }
 
 module "kms" {
@@ -90,4 +91,13 @@ module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
   public_subnet_id = module.vpc.public_subnet_ids[0]
   bastion_sg       = module.vpc.bastion_sg_id
+  bastion_iam_instance_profile = module.iam.bastion_msk_profile_name
+  msk_cluster_bootstrap_brokers = module.msk.msk_bootstrap_brokers
+}
+
+module "msk" {
+  source = "./modules/msk"
+  bastion_sg_id = module.vpc.bastion_sg_id
+  vpc_id = module.vpc.vpc_id
+  vpc_cidr_block = module.vpc.vpc_cidr
 }

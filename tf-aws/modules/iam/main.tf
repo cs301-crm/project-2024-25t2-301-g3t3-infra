@@ -10,6 +10,7 @@ data "aws_iam_policy_document" "transfer_assume_role" {
   }
 }
 
+# IAM for Transfer Family user
 resource "aws_iam_role" "transfer_logging_role" {
   name               = "transfer_logging_role"
   assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
@@ -501,4 +502,56 @@ resource "awscc_eks_pod_identity_association" "scrooge_bank_secrets" {
   namespace       = "default"
   service_account = "scrooge-bank-secrets"
   role_arn        = aws_iam_role.scrooge_bank_secrets.arn
+}
+
+# IAM Role for Bastion with least privilege
+resource "aws_iam_role" "bastion_role" {
+  name = "scrooge-bank-bastion-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM Policy for Bastion - least privilege for MSK management
+resource "aws_iam_policy" "bastion_policy" {
+  name        = "scrooge-bank-bastion-policy"
+  description = "Policy for bastion to manage MSK"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "kafka:DescribeCluster",
+          "kafka:GetBootstrapBrokers",
+          "kafka:ListScramSecrets"
+        ]
+        Effect   = "Allow"
+        Resource = var.msk_cluster_arn
+        # Resource = "arn:aws:kafka:*"
+      }
+    ]
+  })
+}
+
+# Attach policy to role
+resource "aws_iam_role_policy_attachment" "bastion_policy_attachment" {
+  role       = aws_iam_role.bastion_role.name
+  policy_arn = aws_iam_policy.bastion_policy.arn
+}
+
+# Create IAM instance profile
+resource "aws_iam_instance_profile" "bastion_profile" {
+  name = "scrooge-bank-bastion-profile"
+  role = aws_iam_role.bastion_role.name
 }

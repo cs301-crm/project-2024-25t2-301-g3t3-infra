@@ -37,3 +37,8 @@ output "transfer_s3_role" {
 output "external_server_transfer_role_arn" {
   value = aws_iam_role.external_server_transfer_role.arn
 }
+
+output "bastion_msk_profile_name" {
+  description = "name of iam instance profile for bastion access on msk"
+  value = aws_iam_instance_profile.bastion_profile.name
+}

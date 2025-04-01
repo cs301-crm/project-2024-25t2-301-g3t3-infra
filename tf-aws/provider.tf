@@ -44,6 +44,9 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
     }
+    kafka = {
+      source = "Mongey/kafka"
+    }
   }
   required_version = ">= 1.0"
   backend "s3" {
