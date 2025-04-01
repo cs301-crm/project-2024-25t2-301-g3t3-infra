@@ -27,7 +27,6 @@ resource "aws_subnet" "msk_subnets" {
   }
 }
 
-# TODO: Security Group for MSK (allow traffic from bastion and application subnet only)
 resource "aws_security_group" "msk_sg" {
   name        = "scrooge-bank-msk-sg"
   description = "security group for scrooge msk cluster"
@@ -39,7 +38,6 @@ resource "aws_security_group" "msk_sg" {
     to_port     = 9092
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
-    # security_groups = [data.aws_security_group.bastion.id]
     description = "kafka plaintext access from bastion"
   }
 
