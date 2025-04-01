@@ -9,6 +9,8 @@ resource "aws_transfer_server" "sftp_server" {
     "${aws_cloudwatch_log_group.transfer.arn}:*"
   ]
 
+  sftp_authentication_methods = "PASSWORD"
+
   workflow_details {
     on_upload {
       execution_role = var.transfer_s3_role
