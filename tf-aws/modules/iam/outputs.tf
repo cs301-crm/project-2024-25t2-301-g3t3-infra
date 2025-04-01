@@ -29,3 +29,8 @@ output "sftp_user_role_arn" {
 output "process_monetary_transactions_lambda_role_arn" {
   value = aws_iam_role.process_monetary_transactions_lambda_role.arn
 }
+
+output "bastion_msk_profile_name" {
+  description = "name of iam instance profile for bastion access on msk"
+  value = aws_iam_instance_profile.bastion_profile.name
+}

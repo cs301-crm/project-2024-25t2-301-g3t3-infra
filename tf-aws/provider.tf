@@ -32,7 +32,11 @@ provider "aws" {
 
 # TODO: TLS cert configuration 
 provider "kafka" {
-  bootstrap_servers = [aws_msk_cluster.scrooge_bank_cluster.bootstrap_brokers]
+  bootstrap_servers = split(",", module.msk.msk_bootstrap_brokers)
+  # tls_enabled = true
+  # sasl_mechanism = "aws-iam"
+  # sasl_aws_region = "ap-southeast-1"
+  # sasl_aws_role_arn = "arn:aws:iam::345215350058:role/BastionMSK"
 }
 
 terraform {
