@@ -23,6 +23,10 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
+module "glue" {
+  source = "./modules/glue"
+}
+
 module "efs" {
   source              = "./modules/efs"
   eks_cluster_sg_id   = module.eks.eks_cluster_sg_id
