@@ -21,7 +21,6 @@ resource "aws_lambda_function" "process_monetary_transactions" {
     subnet_ids         = var.private_subnet_ids
     security_group_ids = [var.lambda_sg_id]
   }
-
 }
 
 resource "aws_lambda_permission" "s3_trigger" {
