@@ -22,6 +22,10 @@ module "dynamodb" {
   table_name   = "business_transactions_table"
 }
 
+module "glue" {
+  source = "./modules/glue"
+}
+
 module "efs" {
   source              = "./modules/efs"
   eks_cluster_sg_id   = module.eks.eks_cluster_sg_id
@@ -73,14 +77,14 @@ module "transfer_family" {
   external_server_transfer_role_arn = module.iam.external_server_transfer_role_arn
 }
 
-module "lambda_process_monetary_transactions" {
-  source                                        = "./modules/lambda_process_monetary_transactions"
-  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  private_subnet_ids                            = module.vpc.private_subnet_ids
-  lambda_sg_id                                  = module.vpc.lambda_sg_id
-  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
-}
+# module "lambda_process_monetary_transactions" {
+#   source                                        = "./modules/lambda_process_monetary_transactions"
+#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+#   private_subnet_ids                            = module.vpc.private_subnet_ids
+#   lambda_sg_id                                  = module.vpc.lambda_sg_id
+#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+# }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
