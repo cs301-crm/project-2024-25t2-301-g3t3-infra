@@ -94,7 +94,6 @@ module "bastion_ec2" {
 
 module "msk" {
   source = "./modules/msk"
-  bastion_sg_id = module.vpc.bastion_sg_id
   vpc_id = module.vpc.vpc_id
   vpc_cidr_block = module.vpc.vpc_cidr
 }
