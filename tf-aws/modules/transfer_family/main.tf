@@ -1,5 +1,5 @@
 resource "aws_transfer_server" "sftp_server" {
-  identity_provider_type = "SERVICE_MANAGED" # TODO: I think can change to lambda after it's provisioned... need test
+  identity_provider_type = "SERVICE_MANAGED"
   endpoint_type          = "PUBLIC"
   protocols              = ["SFTP"]
   domain                 = "S3"
@@ -9,14 +9,14 @@ resource "aws_transfer_server" "sftp_server" {
     "${aws_cloudwatch_log_group.transfer.arn}:*"
   ]
 
-  sftp_authentication_methods = "PASSWORD"
-
   workflow_details {
     on_upload {
       execution_role = var.transfer_s3_role
       workflow_id    = aws_transfer_workflow.sftp_workflow.id
     }
   }
+
+  force_destroy = true
 
   tags = {
     Name = "monetary-transactions"
