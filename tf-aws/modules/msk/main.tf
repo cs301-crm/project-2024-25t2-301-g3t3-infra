@@ -11,10 +11,6 @@ terraform {
   }
 }
 
-variable "bastion_sg_id" {}
-variable "vpc_id" {}
-variable "vpc_cidr_block" {}
-
 # Create 3 subnets across different AZs for MSK
 resource "aws_subnet" "msk_subnets" {
   count             = 3

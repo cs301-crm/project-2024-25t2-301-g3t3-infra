@@ -26,7 +26,7 @@ resource "aws_instance" "bastion" {
   rm kafka_2.13-4.0.0.tgz
   sudo mv kafka_2.13-4.0.0 /opt/kafka
   sudo chmod -R 755 /opt/kafka
-  echo 'export PATH="$PATH:/opt/kafka/bin"' >> ~/.bashrc
+  export PATH=$PATH:/opt/kafka/bin
   source ~/.bashrc
   EOL
 
