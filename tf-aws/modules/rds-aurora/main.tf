@@ -1,7 +1,3 @@
-variable "database_subnet_ids" {}
-variable "aurora_kms_key_id" {}
-variable "rds_sg_id" {}
-
 resource "aws_rds_cluster" "main" {
   cluster_identifier            = "aurora-cluster"
   engine                        = "aurora-postgresql"
@@ -10,11 +6,11 @@ resource "aws_rds_cluster" "main" {
   manage_master_user_password   = true
   master_username               = "test"
   master_user_secret_kms_key_id = var.aurora_kms_key_id
-  skip_final_snapshot           = false
-  final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
-  snapshot_identifier           = "has-mock-data"
-  backup_retention_period       = 5
-  preferred_backup_window       = "07:00-09:00"
+  skip_final_snapshot           = true # set to false to keep a snapshot
+  # final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
+  # snapshot_identifier           = "has-mock-data"
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
   # apply_immediately      = true
   db_subnet_group_name   = aws_db_subnet_group.aurora.name
   storage_encrypted      = true
@@ -22,6 +18,7 @@ resource "aws_rds_cluster" "main" {
   lifecycle {
     ignore_changes = [
       final_snapshot_identifier,
+      cluster_identifier,
     ]
   }
 }

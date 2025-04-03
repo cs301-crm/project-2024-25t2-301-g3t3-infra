@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
       # version = "~> 5.0"
       version = "5.68.0"
     }
@@ -51,7 +51,7 @@ resource "aws_kms_key" "kms" {
 
 # CloudWatch Log Group for MSK Broker Logs
 resource "aws_cloudwatch_log_group" "msk_broker_logs" {
-  name              = "/aws/msk/scrooge-bank-cluster"
+  name = "/aws/msk/scrooge-bank-cluster"
 }
 
 # MSK Cluster Configuration
@@ -61,8 +61,8 @@ resource "aws_msk_cluster" "scrooge_bank_cluster" {
   number_of_broker_nodes = 3
 
   broker_node_group_info {
-    instance_type   = "kafka.m5.large"
-    client_subnets  = aws_subnet.msk_subnets[*].id
+    instance_type  = "kafka.m5.large"
+    client_subnets = aws_subnet.msk_subnets[*].id
     storage_info {
       ebs_storage_info {
         volume_size = 1000
@@ -92,10 +92,10 @@ resource "aws_msk_cluster" "scrooge_bank_cluster" {
   # Monitoring configuration
   logging_info {
     broker_logs {
-        cloudwatch_logs {
-        enabled = true
+      cloudwatch_logs {
+        enabled   = true
         log_group = aws_cloudwatch_log_group.msk_broker_logs.name
-        }
+      }
     }
   }
 

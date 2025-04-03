@@ -4,13 +4,14 @@ module "vpc" {
 }
 
 module "iam" {
-  source                 = "./modules/iam"
-  sftp_bucket_arn        = module.s3.sftp_bucket_arn
-  user_aurora_arn        = module.rds-aurora.user_aurora_arn
-  aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
-  user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
-  eks_cluster_name       = module.eks.eks_cluster_name
-  msk_cluster_arn = module.msk.msk_cluster_arn
+  source                                   = "./modules/iam"
+  sftp_bucket_arn                          = module.s3.sftp_bucket_arn
+  user_aurora_arn                          = module.rds-aurora.user_aurora_arn
+  aurora_kms_key_arn                       = module.kms.aurora_kms_key_arn
+  user_aurora_secret_arn                   = module.rds-aurora.user_aurora_secret_arn
+  eks_cluster_name                         = module.eks.eks_cluster_name
+  msk_cluster_arn                          = module.msk.msk_cluster_arn
+  lambda_process_monetary_transactions_arn = module.lambda_process_monetary_transactions.process_monetary_transactions_lambda_arn
 }
 
 module "kms" {
@@ -66,29 +67,32 @@ module "rds-aurora" {
 }
 
 module "s3" {
-  source = "./modules/s3"
+  source          = "./modules/s3"
+  sftp_lambda_arn = module.lambda_process_monetary_transactions.process_monetary_transactions_lambda_arn
 }
 
 module "transfer_family" {
-  source                       = "./modules/transfer_family"
-  sftp_user_role_arn           = module.iam.sftp_user_role_arn
-  sftp_transaction_bucket_name = module.s3.sftp_bucket_name
+  source                            = "./modules/transfer_family"
+  sftp_transaction_bucket_name      = module.s3.sftp_bucket_name
+  transfer_logging_role             = module.iam.transfer_logging_role
+  transfer_s3_role                  = module.iam.transfer_s3_role
+  external_server_transfer_role_arn = module.iam.external_server_transfer_role_arn
 }
 
-# module "lambda_process_monetary_transactions" {
-#   source                                        = "./modules/lambda_process_monetary_transactions"
-#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-#   private_subnet_ids                            = module.vpc.private_subnet_ids
-#   lambda_sg_id                                  = module.vpc.lambda_sg_id
-#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
-# }
+module "lambda_process_monetary_transactions" {
+  source                                        = "./modules/lambda_process_monetary_transactions"
+  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+  private_subnet_ids                            = module.vpc.private_subnet_ids
+  lambda_sg_id                                  = module.vpc.lambda_sg_id
+  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+}
 
 module "bastion_ec2" {
-  source           = "./modules/bastion_ec2"
-  public_subnet_id = module.vpc.public_subnet_ids[0]
-  bastion_sg       = module.vpc.bastion_sg_id
-  bastion_iam_instance_profile = module.iam.bastion_msk_profile_name
+  source                        = "./modules/bastion_ec2"
+  public_subnet_id              = module.vpc.public_subnet_ids[0]
+  bastion_sg                    = module.vpc.bastion_sg_id
+  bastion_iam_instance_profile  = module.iam.bastion_msk_profile_name
   msk_cluster_bootstrap_brokers = module.msk.msk_bootstrap_brokers
 }
 
