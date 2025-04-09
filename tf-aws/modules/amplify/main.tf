@@ -1,21 +1,4 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-  required_version = ">= 1.0"
-  backend "s3" {
-    bucket = "scrooge-bank-g3t3-terraform-state"
-    key    = "global/main.tfstate"
-    region = "ap-southeast-1" # cannot use variable because this is used before variables are declared
-  }
-}
-
-provider "aws" {
-  region = var.region
-}
+variable "amplify_logging_role_arn" {}
 
 resource "aws_amplify_app" "amplify_app" {
   name        = var.app_name
@@ -52,7 +35,7 @@ resource "aws_amplify_app" "amplify_app" {
     target = "/index.html"
   }
 
-  iam_service_role_arn = var.amplify_logging_role
+  iam_service_role_arn = var.amplify_logging_role_arn
 }
 
 resource "aws_amplify_branch" "deploy_branch" {

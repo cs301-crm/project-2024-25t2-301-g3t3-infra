@@ -10,6 +10,7 @@ module "iam" {
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
   user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
   eks_cluster_name       = module.eks.eks_cluster_name
+  msk_cluster_arn = module.msk.msk_cluster_arn
 }
 
 module "kms" {
@@ -20,6 +21,17 @@ module "dynamodb" {
   source       = "./modules/dynamodb"
   billing_mode = "PAY_PER_REQUEST"
   table_name   = "business_transactions_table"
+}
+
+module "glue" {
+  source = "./modules/glue"
+}
+
+module "efs" {
+  source              = "./modules/efs"
+  eks_cluster_sg_id   = module.eks.eks_cluster_sg_id
+  private_subnet_1_id = module.vpc.private_subnet_ids[0]
+  private_subnet_2_id = module.vpc.private_subnet_ids[1]
 }
 
 module "eks" {
@@ -33,14 +45,17 @@ module "eks" {
 }
 
 module "helm" {
-  source            = "./modules/helm"
-  eks_cluster_name  = module.eks.eks_cluster_name
-  eks_private_nodes = module.eks.eks_private_nodes
-  vpc_id = module.vpc.vpc_id
+  source                  = "./modules/helm"
+  eks_cluster_name        = module.eks.eks_cluster_name
+  eks_private_nodes       = module.eks.eks_private_nodes
+  vpc_id                  = module.vpc.vpc_id
+  efs_mount_target_zone_a = module.efs.efs_mount_target_zone_a
+  efs_mount_target_zone_b = module.efs.efs_mount_target_zone_b
 }
 
 module "kubernetes" {
-  source = "./modules/kubernetes"
+  source             = "./modules/kubernetes"
+  efs_file_system_id = module.efs.efs_file_system_id
 }
 
 module "rds-aurora" {
@@ -60,21 +75,30 @@ module "transfer_family" {
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
 }
 
-module "lambda_process_monetary_transactions" {
-  source                                        = "./modules/lambda_process_monetary_transactions"
-  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-  private_subnet_ids                            = module.vpc.private_subnet_ids
-  lambda_sg_id                                  = module.vpc.lambda_sg_id
-  user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
-}
+# module "lambda_process_monetary_transactions" {
+#   source                                        = "./modules/lambda_process_monetary_transactions"
+#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+#   private_subnet_ids                            = module.vpc.private_subnet_ids
+#   lambda_sg_id                                  = module.vpc.lambda_sg_id
+#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+# }
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"
   public_subnet_id = module.vpc.public_subnet_ids[0]
   bastion_sg       = module.vpc.bastion_sg_id
+  bastion_iam_instance_profile = module.iam.bastion_msk_profile_name
+  msk_cluster_bootstrap_brokers = module.msk.msk_bootstrap_brokers
+}
+
+module "msk" {
+  source = "./modules/msk"
+  vpc_id = module.vpc.vpc_id
+  vpc_cidr_block = module.vpc.vpc_cidr
 }
 
 module "amplify" {
   source = "./modules/amplify"
+  amplify_logging_role_arn = module.iam.amplify_logging_role_arn
 }
