@@ -159,3 +159,20 @@ resource "aws_security_group" "lambda_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group" "vpc_endpoint_security_group" {
+  vpc_id = aws_vpc.vpc.id
+  name   = "allow traffic to vpc endpoint"
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = -1
+    security_groups = [aws_security_group.lambda_sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

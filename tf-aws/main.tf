@@ -7,11 +7,12 @@ module "vpc" {
 module "iam" {
   source                 = "./modules/iam"
   sftp_bucket_arn        = module.s3.sftp_bucket_arn
-  user_aurora_arn        = module.rds-aurora.user_aurora_arn
+  rds_cluster_arn = module.rds-aurora.rds_cluster_arn
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
-  user_aurora_secret_arn = module.rds-aurora.user_aurora_secret_arn
+  rds_cluster_secret_arn = module.rds-aurora.rds_cluster_secret_arn
   eks_cluster_name       = module.eks.eks_cluster_name
   msk_cluster_arn = module.msk.msk_cluster_arn
+  mt_queue_arn = module.sqs.mt_queue_arn
 }
 
 module "kms" {
@@ -92,7 +93,7 @@ module "transfer_family" {
 #   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
 #   private_subnet_ids                            = module.vpc.private_subnet_ids
 #   lambda_sg_id                                  = module.vpc.lambda_sg_id
-#   user_aurora_secret_arn                        = module.rds-aurora.user_aurora_secret_arn
+#   rds_cluster_secret_arn                        = module.rds-aurora.rds_cluster_secret_arn
 # }
 
 module "bastion_ec2" {

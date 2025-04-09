@@ -40,3 +40,15 @@ resource "aws_vpc_endpoint" "sqs" {
   }
 }
 
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.vpc.id
+  service_name        = "com.amazonaws.ap-southeast-1.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint_security_group.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "secretsmanager-endpoint"
+  }
+}

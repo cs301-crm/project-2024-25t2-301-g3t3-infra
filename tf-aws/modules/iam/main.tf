@@ -1,79 +1,3 @@
-# IAM for writing into user table in RDS
-resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
-  name = "process_monetary_transactions_lambda_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
-  name = "process_monetary_transactions_lambda_policy"
-  role = aws_iam_role.process_monetary_transactions_lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "rds-db:connect",
-        ]
-        Resource = [
-          "${var.user_aurora_arn}"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kms:Decrypt"
-        ]
-        Resource = var.aurora_kms_key_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = var.user_aurora_secret_arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
-  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 # EKS RELATED ROLES
 data "aws_caller_identity" "current" {}
 
@@ -566,4 +490,102 @@ resource "aws_iam_policy" "rds_proxy_policy" {
 resource "aws_iam_role_policy_attachment" "rds_proxy_policy_attachment" {
   role       = aws_iam_role.rds_proxy_role.name
   policy_arn = aws_iam_policy.rds_proxy_policy.arn
+}
+
+resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
+  name               = "process_monetary_transactions_lambda_role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_process_monetary_transactions_lambda" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = aws_iam_policy.process_monetary_transactions_lambda_policy.arn
+}
+
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "rds-db:connect"
+    ]
+    resources = [
+      var.rds_cluster_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      var.aurora_kms_key_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      var.rds_cluster_secret_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:ReceiveMessage"
+    ]
+    resources = [
+      var.mt_queue_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "process_monetary_transactions_lambda_policy" {
+  name        = "process_monetary_transactions_lambda_policy"
+  description = "Policy for monetary_transactions lambda"
+  policy      = data.aws_iam_policy_document.process_monetary_transactions_lambda_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
