@@ -53,3 +53,11 @@ output "bastion_sg_id" {
 output "tf_sg_id" {
   value = aws_security_group.tf_sg.id
 }
+
+output "db_subnet_group_subnet_ids" {
+  value = aws_db_subnet_group.db_subnet_group.subnet_ids
+}
+
+output "db_proxy_sg_id" {
+  value = aws_security_group.db_proxy_sg.id
+}

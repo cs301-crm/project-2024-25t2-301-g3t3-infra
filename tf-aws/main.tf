@@ -64,6 +64,10 @@ module "rds-aurora" {
   database_subnet_ids = module.vpc.private_subnet_ids
   aurora_kms_key_id   = module.kms.aurora_kms_key_id
   rds_sg_id           = module.vpc.rds_sg_id
+  rds_proxy_role_arn = module.iam.rds_proxy_role_arn
+  db_subnet_group_name = module.vpc.db_subnet_group_name
+  db_subnet_group_subnet_ids = module.vpc.db_subnet_group_subnet_ids
+  db_proxy_sg_id = module.vpc.db_proxy_sg_id
 }
 
 module "s3" {

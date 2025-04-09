@@ -524,3 +524,46 @@ data "aws_iam_policy_document" "transfer_assume_role" {
     actions = ["sts:AssumeRole"]
   }
 }
+
+resource "aws_iam_role" "rds_proxy_role" {
+  name               = "rds_proxy_role"
+  assume_role_policy = data.aws_iam_policy_document.rds_proxy_assume_role_policy.json
+}
+data "aws_iam_policy_document" "rds_proxy_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["rds.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_policy" "rds_proxy_policy" {
+  name        = "rds_proxy_policy"
+  description = "Policy for RDS Proxy"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "rds-db:connect",
+          "rds:connect",
+          "rds:describe*",
+          "rds:ListTagsForResource",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "rds_proxy_policy_attachment" {
+  role       = aws_iam_role.rds_proxy_role.name
+  policy_arn = aws_iam_policy.rds_proxy_policy.arn
+}

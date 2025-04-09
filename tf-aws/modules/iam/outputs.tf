@@ -46,3 +46,7 @@ output "external_server_transfer_role_arn" {
   value       = aws_iam_role.external_server_transfer_role.arn
 }
 
+output "rds_proxy_role_arn" {
+  description = "ARN of the RDS proxy role"
+  value       = aws_iam_role.rds_proxy_role.arn
+}
