@@ -1,6 +1,7 @@
 module "vpc" {
   source   = "./modules/vpc"
   vpc_cidr = "10.0.0.0/16"
+  pc_mt_id = module.mock-server.pc_mt_id
 }
 
 module "iam" {
@@ -71,8 +72,13 @@ module "s3" {
 
 module "transfer_family" {
   source                       = "./modules/transfer_family"
-  sftp_user_role_arn           = module.iam.sftp_user_role_arn
   sftp_transaction_bucket_name = module.s3.sftp_bucket_name
+  transfer_logging_role_arn = module.iam.transfer_logging_role_arn
+  transfer_s3_role_arn = module.iam.transfer_s3_role_arn
+  vpc_id = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  tf_sg_id = module.vpc.tf_sg_id
+  external_server_transfer_role_arn = module.iam.external_server_transfer_role_arn
 }
 
 # module "lambda_process_monetary_transactions" {

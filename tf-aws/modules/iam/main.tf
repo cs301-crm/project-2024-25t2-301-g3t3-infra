@@ -1,51 +1,3 @@
-variable "sftp_bucket_arn" {}
-variable "user_aurora_arn" {}
-variable "aurora_kms_key_arn" {}
-variable "user_aurora_secret_arn" {}
-variable "msk_cluster_arn" {}
-
-# IAM for Transfer Family user
-resource "aws_iam_role" "sftp_user_role" {
-  name = "sftp_user_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "transfer.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "sftp_user_policy" {
-  name = "sftp_user_policy"
-  role = aws_iam_role.sftp_user_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      }
-    ]
-  })
-}
-
 # IAM for writing into user table in RDS
 resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
   name = "process_monetary_transactions_lambda_role"
@@ -507,4 +459,68 @@ resource "aws_iam_role_policy_attachment" "bastion_policy_attachment" {
 resource "aws_iam_instance_profile" "bastion_profile" {
   name = "scrooge-bank-bastion-profile"
   role = aws_iam_role.bastion_role.name
+}
+
+# Transfer Family roles
+resource "aws_iam_role" "transfer_logging_role" {
+  name               = "transfer_logging_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
+  role       = aws_iam_role.transfer_logging_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
+}
+
+data "aws_iam_policy_document" "transfer_s3_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "transfer_s3_policy" {
+  name        = "transfer_s3_policy"
+  description = "Policy for transfer s3 role"
+  policy      = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_s3" {
+  role       = aws_iam_role.transfer_s3_role.name
+  policy_arn = aws_iam_policy.transfer_s3_policy.arn
+}
+
+resource "aws_iam_role" "transfer_s3_role" {
+  name               = "transfer_s3_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role" "external_server_transfer_role" {
+  name               = "external_server_transfer_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role_policy" "external_server_transfer_policy" {
+  name   = "transfer-user-iam-policy"
+  role   = aws_iam_role.external_server_transfer_role.id
+  policy = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
+data "aws_iam_policy_document" "transfer_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["transfer.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
 }

@@ -88,3 +88,17 @@ resource "aws_security_group_rule" "lb_https" {
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.lb_sg.id
 }
+
+resource "aws_security_group" "tf_sg" {
+  name        = "transfer-sg"
+  vpc_id      = aws_vpc.vpc.id
+  description = "Security group for Transfer Family SFTP server"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_mock_server_cidr_block]
+    description = "Allow SFTP access from mock server"
+  }
+}

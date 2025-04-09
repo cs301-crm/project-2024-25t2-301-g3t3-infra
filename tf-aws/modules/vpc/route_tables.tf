@@ -4,6 +4,10 @@ resource "aws_route_table" "public_route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
   }
+
+  tags = {
+    Name = "public-route-table"
+  }
 }
 
 resource "aws_route_table" "private_route_table" {
@@ -11,6 +15,14 @@ resource "aws_route_table" "private_route_table" {
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_nat_gateway.nat_gw.id
+  }
+  route {
+    cidr_block = var.vpc_mock_server_cidr_block
+    vpc_peering_connection_id = var.pc_mt_id # peering connection - monetary transactions
+  }
+
+  tags = {
+    Name = "private-route-table"
   }
 }
 
