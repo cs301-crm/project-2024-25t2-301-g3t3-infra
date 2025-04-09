@@ -97,3 +97,9 @@ module "msk" {
   vpc_id = module.vpc.vpc_id
   vpc_cidr_block = module.vpc.vpc_cidr
 }
+
+module "mock-server" {
+  source = "./modules/mock-server"
+  crm_vpc_id = module.vpc.vpc_id
+  crm_sftp_server_endpoint = module.transfer_family.sftp_server_endpoint
+}
