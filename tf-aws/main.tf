@@ -83,6 +83,7 @@ module "transfer_family" {
   private_subnet_ids = module.vpc.private_subnet_ids
   tf_sg_id = module.vpc.tf_sg_id
   external_server_transfer_role_arn = module.iam.external_server_transfer_role_arn
+  mt_queue_arn = module.sqs.mt_queue_arn
 }
 
 # module "lambda_process_monetary_transactions" {
@@ -106,6 +107,11 @@ module "msk" {
   source = "./modules/msk"
   vpc_id = module.vpc.vpc_id
   vpc_cidr_block = module.vpc.vpc_cidr
+}
+
+module "sqs" {
+  source = "./modules/sqs"
+  sftp_bucket_arn = module.transfer_family.sftp_bucket_arn
 }
 
 module "mock-server" {

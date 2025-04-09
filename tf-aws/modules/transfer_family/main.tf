@@ -1,11 +1,3 @@
-variable "sftp_transaction_bucket_name" {}
-variable "transfer_logging_role_arn" {}
-variable "transfer_s3_role_arn" {}
-variable "vpc_id" {}
-variable "private_subnet_ids" {}
-variable "tf_sg_id" {}
-variable "external_server_transfer_role_arn" {}
-
 resource "aws_transfer_server" "sftp_server" {
   identity_provider_type = "SERVICE_MANAGED"
   endpoint_type          = "VPC"
@@ -81,4 +73,14 @@ resource "aws_transfer_workflow" "sftp_workflow" {
 # files received by transfer server will go into this bucket
 resource "aws_s3_bucket" "sftp_bucket" {
   bucket = "scrooge-bank-g3t3-monetary-transactions"
+}
+
+resource "aws_s3_bucket_notification" "s3_event_notification" {
+  bucket = aws_s3_bucket.sftp_bucket.id
+
+  queue {
+    events        = ["s3:ObjectCreated:*"]
+    queue_arn     = var.mt_queue_arn
+    filter_prefix = "monetary_transactions/"
+  }
 }
