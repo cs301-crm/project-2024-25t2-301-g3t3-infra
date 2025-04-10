@@ -100,7 +100,7 @@ resource "aws_vpc_endpoint" "transfer" {
   private_dns_enabled = true
 
   tags = {
-    Name = "sftp-endpoint"
+    Name = "sftp-endpoint-mock-server"
   }
 }
 
@@ -112,7 +112,7 @@ resource "aws_vpc_endpoint" "s3" {
     aws_route_table.private_rt.id
   ]
   tags = {
-    Name = "s3-endpoint"
+    Name = "s3-endpoint-mock-server"
   }
 }
 
@@ -147,7 +147,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   private_dns_enabled = true
 
   tags = {
-    Name = "secretsmanager-endpoint"
+    Name = "secretsmanager-endpoint-mock-server"
   }
 }
 
