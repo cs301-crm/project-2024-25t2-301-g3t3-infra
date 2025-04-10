@@ -97,3 +97,8 @@ module "msk" {
   vpc_id = module.vpc.vpc_id
   vpc_cidr_block = module.vpc.vpc_cidr
 }
+
+module "amplify" {
+  source = "./modules/amplify"
+  amplify_logging_role_arn = module.iam.amplify_logging_role_arn
+}
