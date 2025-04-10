@@ -110,6 +110,7 @@ module "msk" {
   vpc_cidr_block = module.vpc.vpc_cidr
 }
 
+
 module "sqs" {
   source = "./modules/sqs"
   sftp_bucket_arn = module.transfer_family.sftp_bucket_arn
@@ -119,4 +120,9 @@ module "mock-server" {
   source = "./modules/mock-server"
   crm_vpc_id = module.vpc.vpc_id
   crm_sftp_server_endpoint = module.transfer_family.sftp_server_endpoint
+}
+    
+module "amplify" {
+  source = "./modules/amplify"
+  amplify_logging_role_arn = module.iam.amplify_logging_role_arn
 }

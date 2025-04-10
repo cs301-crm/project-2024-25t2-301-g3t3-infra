@@ -50,3 +50,7 @@ output "rds_proxy_role_arn" {
   description = "ARN of the RDS proxy role"
   value       = aws_iam_role.rds_proxy_role.arn
 }
+
+output "amplify_logging_role_arn" {
+  value = aws_iam_role.amplify_role.arn
+}

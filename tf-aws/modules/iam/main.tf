@@ -351,7 +351,6 @@ resource "aws_iam_role" "bastion_role" {
   })
 }
 
-# IAM Policy for Bastion - least privilege for MSK management
 resource "aws_iam_policy" "bastion_policy" {
   name        = "scrooge-bank-bastion-policy"
   description = "Policy for bastion to manage MSK"
@@ -373,17 +372,16 @@ resource "aws_iam_policy" "bastion_policy" {
   })
 }
 
-# Attach policy to role
 resource "aws_iam_role_policy_attachment" "bastion_policy_attachment" {
   role       = aws_iam_role.bastion_role.name
   policy_arn = aws_iam_policy.bastion_policy.arn
 }
 
-# Create IAM instance profile
 resource "aws_iam_instance_profile" "bastion_profile" {
   name = "scrooge-bank-bastion-profile"
   role = aws_iam_role.bastion_role.name
 }
+
 
 # Transfer Family roles
 resource "aws_iam_role" "transfer_logging_role" {
@@ -588,4 +586,59 @@ resource "aws_iam_policy" "process_monetary_transactions_lambda_policy" {
 resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   role       = aws_iam_role.process_monetary_transactions_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+# Amplify Role 
+resource "aws_iam_role" "amplify_role" {
+  name = "scrooge-bank-amplify-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "amplify.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "amplify_policy" {
+  name        = "scrooge-bank-amplify-policy"
+  description = "Policy for amplify to push logs to CloudWatch"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement: [
+        {
+            "Sid": "PushLogs",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*:log-stream:*"
+        },
+        {
+            "Sid": "CreateLogGroup",
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*"
+        },
+        {
+            "Sid": "DescribeLogGroups",
+            "Effect": "Allow",
+            "Action": "logs:DescribeLogGroups",
+            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:*"
+        }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "amplify_policy_attachment" {
+  role       = aws_iam_role.amplify_role.name
+  policy_arn = aws_iam_policy.amplify_policy.arn
 }
