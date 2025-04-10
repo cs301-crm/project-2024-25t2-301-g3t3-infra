@@ -152,30 +152,3 @@ def handler(event, context):
         return {"statusCode": 500, "body": str(e)}
 
     return
-
-# def handler(event, context):
-#     try:
-#         conn = psycopg.connect(
-#             host='',
-#             dbname='',
-#             user='test',
-#             password='',
-#             port='5432'
-#         )
-#         cursor = conn.cursor()
-#         print("connected to db")
-
-#         cursor.execute('SELECT usename FROM pg_user')
-#         for (usename,) in cursor:
-#             print("user:", usename)
-
-#         print("still running? thats crazy")
-#         for _ in range(10000):
-#             a=1
-#         print("wow")
-#         cursor.close()
-#         conn.close()
-
-
-#     except Exception as e:
-#         print("Error:", e)

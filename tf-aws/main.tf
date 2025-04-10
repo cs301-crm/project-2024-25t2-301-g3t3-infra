@@ -87,14 +87,16 @@ module "transfer_family" {
   mt_queue_arn = module.sqs.mt_queue_arn
 }
 
-# module "lambda_process_monetary_transactions" {
-#   source                                        = "./modules/lambda_process_monetary_transactions"
-#   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-#   sftp_bucket_arn                               = module.s3.sftp_bucket_arn
-#   private_subnet_ids                            = module.vpc.private_subnet_ids
-#   lambda_sg_id                                  = module.vpc.lambda_sg_id
-#   rds_cluster_secret_arn                        = module.rds-aurora.rds_cluster_secret_arn
-# }
+module "lambda_process_monetary_transactions" {
+  source                                        = "./modules/lambda_process_monetary_transactions"
+  process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
+  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+  private_subnet_ids                            = module.vpc.private_subnet_ids
+  lambda_sg_id                                  = module.vpc.lambda_sg_id
+  rds_cluster_secret_arn                        = module.rds-aurora.rds_cluster_secret_arn
+  mt_queue_arn = module.sqs.mt_queue_arn
+  db_proxy_lambdas_endpoint = module.rds-aurora.db_proxy_lambdas_endpoint
+}
 
 module "bastion_ec2" {
   source           = "./modules/bastion_ec2"

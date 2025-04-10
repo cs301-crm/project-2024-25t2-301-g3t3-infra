@@ -1,7 +1,19 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    klayers = {
+      source  = "ldcorentin/klayer"
+      version = "~> 1.0.0"
+    }
+  }
+}
 data "archive_file" "dummy_zip" {
   type = "zip"
-  source_file = "test/process-mt.py"
-  output_path = "test/process-mt.zip"
+  source_file = "process-mt.py"
+  output_path = "process-mt.zip"
 }
 
 data "klayers_package_latest_version" "psycopg" {
@@ -13,28 +25,18 @@ data "klayers_package_latest_version" "psycopg" {
 
 resource "aws_lambda_function" "process_mt" {
   function_name    = "process-mt-lambda"
-  role             = var.process_monetary_transactions_lambda_role_arn
+  role             = var.process_monetary_transactions_lambda_role_arn 
   handler          = "process-mt.handler"
   runtime          = "python3.12"
-  filename         = "process-mt.zip"
+  filename         = "process-mt.zip" # Dummy file, the actual zip file will be uploaded in the lambda repo
   source_code_hash = data.archive_file.dummy_zip.output_base64sha256
   timeout          = 60
-}
-
-resource "aws_lambda_function" "process_monetary_transactions" {
-  function_name = "process_monetary_transactions"
-  role          = var.process_monetary_transactions_lambda_role_arn
-  handler       = "process_monetary_transactions.lambda_handler"
-  runtime       = "python3.9"
-  filename      = "dummy.zip" # Dummy file, the actual zip file will be uploaded in the lambda repo
-  timeout       = 60
-
   environment {
     variables = {
-      PROXY_HOST = aws_db_proxy.lambdas.endpoint
+      PROXY_HOST = var.db_proxy_lambdas_endpoint
       DB_PORT = "5432"
       DB_NAME = "user_db"
-      DB_SECRET_ARN = aws_rds_cluster.main.master_user_secret[0].secret_arn
+      DB_SECRET_ARN = var.rds_cluster_secret_arn
     }
   }
   vpc_config {

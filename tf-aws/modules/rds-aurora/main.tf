@@ -18,6 +18,8 @@ resource "aws_rds_cluster" "main" {
   lifecycle {
     ignore_changes = [
       final_snapshot_identifier,
+      cluster_identifier,
+      availability_zones,
     ]
   }
 }

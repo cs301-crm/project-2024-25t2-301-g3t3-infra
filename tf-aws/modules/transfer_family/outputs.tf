@@ -1,5 +1,5 @@
 output "sftp_server_endpoint" {
-  value = aws_transfer_server.sftp_server.endpoint
+  value = data.aws_vpc_endpoint.vpce_tf.dns_entry[0]["dns_name"]
 }
 
 output "sftp_bucket_arn" {

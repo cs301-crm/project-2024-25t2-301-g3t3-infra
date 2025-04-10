@@ -25,20 +25,20 @@ resource "aws_security_group" "bastion" {
   vpc_id      = aws_vpc.vpc.id
 }
 
-resource "aws_security_group" "lambda" {
-  name        = "lambda-sg"
-  description = "Allow lambda to function"
-  vpc_id      = aws_vpc.vpc.id
-}
+# resource "aws_security_group" "lambda" {
+#   name        = "lambda-sg"
+#   description = "Allow lambda to function"
+#   vpc_id      = aws_vpc.vpc.id
+# }
 
-# Allow lambda access to RDS
-resource "aws_vpc_security_group_ingress_rule" "rds_to_lambda_ingress" {
-  security_group_id            = aws_security_group.lambda.id
-  referenced_security_group_id = aws_security_group.rds.id
-  ip_protocol                  = "tcp"
-  from_port                    = 5432
-  to_port                      = 5432
-}
+# # Allow lambda access to RDS
+# resource "aws_vpc_security_group_ingress_rule" "rds_to_lambda_ingress" {
+#   security_group_id            = aws_security_group.lambda.id
+#   referenced_security_group_id = aws_security_group.rds.id
+#   ip_protocol                  = "tcp"
+#   from_port                    = 5432
+#   to_port                      = 5432
+# }
 
 # Allow bastion access to RDS
 resource "aws_vpc_security_group_ingress_rule" "rds_to_bastion_ingress" {
@@ -58,28 +58,28 @@ resource "aws_vpc_security_group_ingress_rule" "bastion_ingress" {
   to_port           = 22
 }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_egress" {
-  security_group_id            = aws_security_group.lambda.id
-  referenced_security_group_id = aws_security_group.rds.id
-  ip_protocol                  = "tcp"
-  from_port                    = 5432
-  to_port                      = 5432
-}
+# resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_egress" {
+#   security_group_id            = aws_security_group.lambda.id
+#   referenced_security_group_id = aws_security_group.rds.id
+#   ip_protocol                  = "tcp"
+#   from_port                    = 5432
+#   to_port                      = 5432
+# }
 
-resource "aws_vpc_security_group_egress_rule" "lambda_to_internet_egress" {
-  security_group_id            = aws_security_group.lambda.id
-  referenced_security_group_id = aws_security_group.rds.id
-  ip_protocol                  = "tcp"
-  from_port                    = 443
-  to_port                      = 443
-}
+# resource "aws_vpc_security_group_egress_rule" "lambda_to_internet_egress" {
+#   security_group_id            = aws_security_group.lambda.id
+#   referenced_security_group_id = aws_security_group.rds.id
+#   ip_protocol                  = "tcp"
+#   from_port                    = 443
+#   to_port                      = 443
+# }
 
 # Allow all outbound from RDS
-resource "aws_vpc_security_group_egress_rule" "rds_egress" {
-  security_group_id = aws_security_group.rds.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1"
-}
+# resource "aws_vpc_security_group_egress_rule" "rds_egress" {
+#   security_group_id = aws_security_group.rds.id
+#   cidr_ipv4         = "0.0.0.0/0"
+#   ip_protocol       = "-1"
+# }
 
 # Allow all outbound from bastion
 resource "aws_vpc_security_group_egress_rule" "bastion_egress" {
@@ -141,7 +141,7 @@ resource "aws_security_group" "db_proxy_sg" {
 }
 
 resource "aws_security_group" "lambda_sg" {
-  name        = "lambda-sg"
+  name        = "lambda-sg-good"
   vpc_id      = aws_vpc.vpc.id
   description = "Security group for Lambda function"
 

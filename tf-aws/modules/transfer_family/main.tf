@@ -84,3 +84,11 @@ resource "aws_s3_bucket_notification" "s3_event_notification" {
     filter_prefix = "monetary_transactions/"
   }
 }
+
+data "aws_vpc_endpoint" "vpce_tf" {
+  vpc_id = var.vpc_id
+  filter {
+    name   = "vpc-endpoint-id"
+    values = ["${aws_transfer_server.sftp_server.endpoint_details[0].vpc_endpoint_id}"]
+  }
+}
