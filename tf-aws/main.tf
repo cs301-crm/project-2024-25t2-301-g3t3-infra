@@ -2,6 +2,7 @@ module "vpc" {
   source   = "./modules/vpc"
   vpc_cidr = "10.0.0.0/16"
   pc_mt_id = module.mock-server.pc_mt_id
+  vpc_mock_server_cidr_block = module.mock-server.vpc_mock_server_cidr_block
 }
 
 module "iam" {
