@@ -155,7 +155,7 @@ resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.vpc.id
 
   route {
-    cidr_block                = "10.2.0.0/16"
+    cidr_block                = var.crm_vpc_cidr
     vpc_peering_connection_id = aws_vpc_peering_connection.pc_mt.id
   }
 

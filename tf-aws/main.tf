@@ -123,6 +123,7 @@ module "mock-server" {
   source = "./modules/mock-server"
   crm_vpc_id = module.vpc.vpc_id
   crm_sftp_server_endpoint = module.transfer_family.sftp_server_endpoint
+  crm_vpc_cidr = module.vpc.vpc_cidr
 }
     
 module "amplify" {
