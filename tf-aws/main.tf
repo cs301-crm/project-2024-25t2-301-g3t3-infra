@@ -7,7 +7,7 @@ module "vpc" {
 
 module "iam" {
   source                 = "./modules/iam"
-  sftp_bucket_arn        = module.s3.sftp_bucket_arn
+  sftp_bucket_arn        = module.transfer_family.sftp_bucket_arn
   rds_cluster_arn = module.rds-aurora.rds_cluster_arn
   aurora_kms_key_arn     = module.kms.aurora_kms_key_arn
   rds_cluster_secret_arn = module.rds-aurora.rds_cluster_secret_arn
@@ -72,13 +72,8 @@ module "rds-aurora" {
   db_proxy_sg_id = module.vpc.db_proxy_sg_id
 }
 
-module "s3" {
-  source = "./modules/s3"
-}
-
 module "transfer_family" {
   source                       = "./modules/transfer_family"
-  sftp_transaction_bucket_name = module.s3.sftp_bucket_name
   transfer_logging_role_arn = module.iam.transfer_logging_role_arn
   transfer_s3_role_arn = module.iam.transfer_s3_role_arn
   vpc_id = module.vpc.vpc_id
@@ -91,7 +86,7 @@ module "transfer_family" {
 module "lambda_process_monetary_transactions" {
   source                                        = "./modules/lambda_process_monetary_transactions"
   process_monetary_transactions_lambda_role_arn = module.iam.process_monetary_transactions_lambda_role_arn
-  sftp_bucket_arn                               = module.s3.sftp_bucket_arn
+  sftp_bucket_arn                               = module.transfer_family.sftp_bucket_arn
   private_subnet_ids                            = module.vpc.private_subnet_ids
   lambda_sg_id                                  = module.vpc.lambda_sg_id
   rds_cluster_secret_arn                        = module.rds-aurora.rds_cluster_secret_arn
