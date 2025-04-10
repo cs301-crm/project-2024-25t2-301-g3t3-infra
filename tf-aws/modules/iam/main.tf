@@ -465,7 +465,7 @@ data "aws_iam_policy_document" "rds_proxy_assume_role_policy" {
 resource "aws_iam_policy" "rds_proxy_policy" {
   name        = "rds_proxy_policy"
   description = "Policy for RDS Proxy"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -612,28 +612,28 @@ resource "aws_iam_policy" "amplify_policy" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement: [
-        {
-            "Sid": "PushLogs",
-            "Effect": "Allow",
-            "Action": [
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-            ],
-            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*:log-stream:*"
-        },
-        {
-            "Sid": "CreateLogGroup",
-            "Effect": "Allow",
-            "Action": "logs:CreateLogGroup",
-            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*"
-        },
-        {
-            "Sid": "DescribeLogGroups",
-            "Effect": "Allow",
-            "Action": "logs:DescribeLogGroups",
-            "Resource": "arn:aws:logs:ap-southeast-1:345215350058:log-group:*"
-        }
+    Statement : [
+      {
+        "Sid" : "PushLogs",
+        "Effect" : "Allow",
+        "Action" : [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*:log-stream:*"
+      },
+      {
+        "Sid" : "CreateLogGroup",
+        "Effect" : "Allow",
+        "Action" : "logs:CreateLogGroup",
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*"
+      },
+      {
+        "Sid" : "DescribeLogGroups",
+        "Effect" : "Allow",
+        "Action" : "logs:DescribeLogGroups",
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:*"
+      }
     ]
   })
 }

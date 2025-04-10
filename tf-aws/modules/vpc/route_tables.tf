@@ -17,7 +17,7 @@ resource "aws_route_table" "private_route_table" {
     gateway_id = aws_nat_gateway.nat_gw.id
   }
   route {
-    cidr_block = var.vpc_mock_server_cidr_block
+    cidr_block                = var.vpc_mock_server_cidr_block
     vpc_peering_connection_id = var.pc_mt_id # peering connection - monetary transactions
   }
 

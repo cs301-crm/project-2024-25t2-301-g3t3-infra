@@ -11,7 +11,7 @@ terraform {
   }
 }
 data "archive_file" "dummy_zip" {
-  type = "zip"
+  type        = "zip"
   source_file = "process-mt.py"
   output_path = "process-mt.zip"
 }
@@ -25,7 +25,7 @@ data "klayers_package_latest_version" "psycopg" {
 
 resource "aws_lambda_function" "process_mt" {
   function_name    = "process-mt-lambda"
-  role             = var.process_monetary_transactions_lambda_role_arn 
+  role             = var.process_monetary_transactions_lambda_role_arn
   handler          = "process-mt.handler"
   runtime          = "python3.12"
   filename         = "process-mt.zip" # Dummy file, the actual zip file will be uploaded in the lambda repo
@@ -33,9 +33,9 @@ resource "aws_lambda_function" "process_mt" {
   timeout          = 60
   environment {
     variables = {
-      PROXY_HOST = var.db_proxy_lambdas_endpoint
-      DB_PORT = "5432"
-      DB_NAME = "user_db"
+      PROXY_HOST    = var.db_proxy_lambdas_endpoint
+      DB_PORT       = "5432"
+      DB_NAME       = "user_db"
       DB_SECRET_ARN = var.rds_cluster_secret_arn
     }
   }
@@ -67,5 +67,5 @@ resource "aws_lambda_permission" "sqs_trigger" {
   function_name = aws_lambda_function.process_mt.function_name
   principal     = "sqs.amazonaws.com"
   source_arn    = var.mt_queue_arn
-} 
+}
 

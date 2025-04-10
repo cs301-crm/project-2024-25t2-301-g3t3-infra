@@ -11,5 +11,5 @@ variable "pc_mt_id" {
 variable "vpc_mock_server_cidr_block" {
   description = "value for the mock server VPC"
   type        = string
-  default = "10.1.0.0/16"
+  default     = "10.1.0.0/16"
 }

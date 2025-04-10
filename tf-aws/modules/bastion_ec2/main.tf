@@ -9,7 +9,7 @@ resource "aws_instance" "bastion" {
   subnet_id              = var.public_subnet_id
   vpc_security_group_ids = [var.bastion_sg]
   key_name               = "cs301 bastion"
-  iam_instance_profile = var.bastion_iam_instance_profile
+  iam_instance_profile   = var.bastion_iam_instance_profile
 
   user_data = <<-EOL
   #!/bin/bash -xe
@@ -37,10 +37,10 @@ resource "aws_instance" "bastion" {
 
 # create a script to bootstrap msk topics on the bastion host
 resource "null_resource" "create_topic_script" {
-  depends_on = [ aws_instance.bastion,  var.msk_cluster_bootstrap_brokers]
+  depends_on = [aws_instance.bastion, var.msk_cluster_bootstrap_brokers]
 
   # copy script to bastion host
-  provisioner "file" { 
+  provisioner "file" {
     content = <<-EOF
     #!/bin/bash
 
@@ -101,7 +101,7 @@ resource "null_resource" "create_topic_script" {
     EOF
 
     destination = "/tmp/create_topics.sh"
-    
+
     connection {
       type        = "ssh"
       user        = "ec2-user"
@@ -116,7 +116,7 @@ resource "null_resource" "create_topic_script" {
       "chmod +x /tmp/create_topics.sh",
       "/tmp/create_topics.sh"
     ]
-    
+
     connection {
       type        = "ssh"
       user        = "ec2-user"

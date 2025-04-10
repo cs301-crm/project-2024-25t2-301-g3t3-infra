@@ -4,17 +4,17 @@ resource "aws_security_group" "rds" {
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.lambda_sg.id, aws_security_group.db_proxy_sg.id]
-    description = "Allow access from lambda and db proxy"
+    description     = "Allow access from lambda and db proxy"
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -124,18 +124,18 @@ resource "aws_security_group" "db_proxy_sg" {
   description = "Security group for DB-proxy"
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.lambda_sg.id]
-    description = "Allow access from lambda"
+    description     = "Allow access from lambda"
   }
 
   egress { # use 0.0.0.0/0 for testing
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
     description = "Allow all outbound traffic"
   }
 }

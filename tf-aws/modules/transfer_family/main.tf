@@ -4,7 +4,7 @@ resource "aws_transfer_server" "sftp_server" {
   protocols              = ["SFTP"]
   domain                 = "S3"
 
-  logging_role = var.transfer_logging_role_arn 
+  logging_role = var.transfer_logging_role_arn
   structured_log_destinations = [
     "${aws_cloudwatch_log_group.transfer.arn}:*"
   ]
@@ -17,7 +17,7 @@ resource "aws_transfer_server" "sftp_server" {
   }
 
   endpoint_details {
-    subnet_ids = var.private_subnet_ids 
+    subnet_ids = var.private_subnet_ids
     security_group_ids = [
       var.tf_sg_id
     ]
