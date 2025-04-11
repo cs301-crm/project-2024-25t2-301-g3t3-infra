@@ -124,8 +124,7 @@ provider "registry.terraform.io/hashicorp/null" {
 }
 
 provider "registry.terraform.io/ldcorentin/klayer" {
-  version     = "1.0.1"
-  constraints = "~> 1.0.0"
+  version = "1.0.1"
   hashes = [
     "h1:YCpwdmGlVszU18qoI22M+Ft1Zj0adomtiKH0IF810ks=",
     "zh:00b30fc08298a35bec156954e43052d177a78b7aec1d56a56ce018939d325474",
