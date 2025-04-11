@@ -160,9 +160,9 @@ resource "helm_release" "redis" {
   name = "redis"
 
   repository = "https://charts.bitnami.com/bitnami"
-  chart = "redis"
-  namespace = "default"
-  version = "19.6.4"
+  chart      = "redis"
+  namespace  = "default"
+  version    = "19.6.4"
 
   values = [file("${path.module}/values/redis.yaml")]
 
