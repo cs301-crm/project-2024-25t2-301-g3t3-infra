@@ -140,6 +140,8 @@ resource "helm_release" "secrets_csi_driver" {
   namespace  = "kube-system"
   version    = "1.4.8"
 
+  values = [file("${path.module}/values/secrets-store.yaml")]
+
   depends_on = [helm_release.efs_csi_driver]
 }
 
@@ -152,4 +154,17 @@ resource "helm_release" "secrets_csi_driver_aws_provider" {
   version    = "0.3.11"
 
   depends_on = [helm_release.secrets_csi_driver]
+}
+
+resource "helm_release" "redis" {
+  name = "redis"
+
+  repository = "https://charts.bitnami.com/bitnami"
+  chart = "redis"
+  namespace = "default"
+  version = "19.6.4"
+
+  values = [file("${path.module}/values/redis.yaml")]
+
+  depends_on = [var.eks_private_nodes]
 }

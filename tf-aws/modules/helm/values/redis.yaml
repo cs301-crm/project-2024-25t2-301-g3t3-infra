@@ -1,0 +1,12 @@
+architecture: standalone
+
+auth:
+  enabled: false
+
+# metrics exporter enabled on
+metrics:
+  enabled: true
+
+master:
+  persistence:
+    enabled: false

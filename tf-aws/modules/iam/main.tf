@@ -1,127 +1,3 @@
-variable "sftp_bucket_arn" {}
-variable "user_aurora_arn" {}
-variable "aurora_kms_key_arn" {}
-variable "user_aurora_secret_arn" {}
-variable "msk_cluster_arn" {}
-
-# IAM for Transfer Family user
-resource "aws_iam_role" "sftp_user_role" {
-  name = "sftp_user_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "transfer.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "sftp_user_policy" {
-  name = "sftp_user_policy"
-  role = aws_iam_role.sftp_user_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      }
-    ]
-  })
-}
-
-# IAM for writing into user table in RDS
-resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
-  name = "process_monetary_transactions_lambda_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "process_monetary_transactions_lambda_policy" {
-  name = "process_monetary_transactions_lambda_policy"
-  role = aws_iam_role.process_monetary_transactions_lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.sftp_bucket_arn,
-          "${var.sftp_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "rds-db:connect",
-        ]
-        Resource = [
-          "${var.user_aurora_arn}"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kms:Decrypt"
-        ]
-        Resource = var.aurora_kms_key_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = var.user_aurora_secret_arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
-  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 # EKS RELATED ROLES
 data "aws_caller_identity" "current" {}
 
@@ -475,7 +351,6 @@ resource "aws_iam_role" "bastion_role" {
   })
 }
 
-# IAM Policy for Bastion - least privilege for MSK management
 resource "aws_iam_policy" "bastion_policy" {
   name        = "scrooge-bank-bastion-policy"
   description = "Policy for bastion to manage MSK"
@@ -497,14 +372,273 @@ resource "aws_iam_policy" "bastion_policy" {
   })
 }
 
-# Attach policy to role
 resource "aws_iam_role_policy_attachment" "bastion_policy_attachment" {
   role       = aws_iam_role.bastion_role.name
   policy_arn = aws_iam_policy.bastion_policy.arn
 }
 
-# Create IAM instance profile
 resource "aws_iam_instance_profile" "bastion_profile" {
   name = "scrooge-bank-bastion-profile"
   role = aws_iam_role.bastion_role.name
+}
+
+
+# Transfer Family roles
+resource "aws_iam_role" "transfer_logging_role" {
+  name               = "transfer_logging_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_logging" {
+  role       = aws_iam_role.transfer_logging_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
+}
+
+data "aws_iam_policy_document" "transfer_s3_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "transfer_s3_policy" {
+  name        = "transfer_s3_policy"
+  description = "Policy for transfer s3 role"
+  policy      = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_transfer_s3" {
+  role       = aws_iam_role.transfer_s3_role.name
+  policy_arn = aws_iam_policy.transfer_s3_policy.arn
+}
+
+resource "aws_iam_role" "transfer_s3_role" {
+  name               = "transfer_s3_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role" "external_server_transfer_role" {
+  name               = "external_server_transfer_role"
+  assume_role_policy = data.aws_iam_policy_document.transfer_assume_role.json
+}
+
+resource "aws_iam_role_policy" "external_server_transfer_policy" {
+  name   = "transfer-user-iam-policy"
+  role   = aws_iam_role.external_server_transfer_role.id
+  policy = data.aws_iam_policy_document.transfer_s3_policy.json
+}
+
+data "aws_iam_policy_document" "transfer_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["transfer.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "rds_proxy_role" {
+  name               = "rds_proxy_role"
+  assume_role_policy = data.aws_iam_policy_document.rds_proxy_assume_role_policy.json
+}
+data "aws_iam_policy_document" "rds_proxy_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["rds.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_policy" "rds_proxy_policy" {
+  name        = "rds_proxy_policy"
+  description = "Policy for RDS Proxy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "rds-db:connect",
+          "rds:connect",
+          "rds:describe*",
+          "rds:ListTagsForResource",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "rds_proxy_policy_attachment" {
+  role       = aws_iam_role.rds_proxy_role.name
+  policy_arn = aws_iam_policy.rds_proxy_policy.arn
+}
+
+resource "aws_iam_role" "process_monetary_transactions_lambda_role" {
+  name               = "process_monetary_transactions_lambda_role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "iam_for_process_monetary_transactions_lambda" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = aws_iam_policy.process_monetary_transactions_lambda_policy.arn
+}
+
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "rds-db:connect"
+    ]
+    resources = [
+      var.rds_cluster_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      var.sftp_bucket_arn,
+      "${var.sftp_bucket_arn}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      var.aurora_kms_key_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      var.rds_cluster_secret_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:ReceiveMessage"
+    ]
+    resources = [
+      var.mt_queue_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "process_monetary_transactions_lambda_policy" {
+  name        = "process_monetary_transactions_lambda_policy"
+  description = "Policy for monetary_transactions lambda"
+  policy      = data.aws_iam_policy_document.process_monetary_transactions_lambda_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
+  role       = aws_iam_role.process_monetary_transactions_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+# Amplify Role 
+resource "aws_iam_role" "amplify_role" {
+  name = "scrooge-bank-amplify-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "amplify.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "amplify_policy" {
+  name        = "scrooge-bank-amplify-policy"
+  description = "Policy for amplify to push logs to CloudWatch"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement : [
+      {
+        "Sid" : "PushLogs",
+        "Effect" : "Allow",
+        "Action" : [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*:log-stream:*"
+      },
+      {
+        "Sid" : "CreateLogGroup",
+        "Effect" : "Allow",
+        "Action" : "logs:CreateLogGroup",
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:/aws/amplify/*"
+      },
+      {
+        "Sid" : "DescribeLogGroups",
+        "Effect" : "Allow",
+        "Action" : "logs:DescribeLogGroups",
+        "Resource" : "arn:aws:logs:ap-southeast-1:345215350058:log-group:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "amplify_policy_attachment" {
+  role       = aws_iam_role.amplify_role.name
+  policy_arn = aws_iam_policy.amplify_policy.arn
 }

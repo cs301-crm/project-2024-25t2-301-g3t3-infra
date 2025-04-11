@@ -1,0 +1,1 @@
+variable "sftp_bucket_arn" {}

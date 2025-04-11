@@ -43,9 +43,21 @@ output "rds_sg_id" {
 }
 
 output "lambda_sg_id" {
-  value = aws_security_group.lambda.id
+  value = aws_security_group.lambda_sg.id
 }
 
 output "bastion_sg_id" {
   value = aws_security_group.bastion.id
+}
+
+output "tf_sg_id" {
+  value = aws_security_group.tf_sg.id
+}
+
+output "db_subnet_group_subnet_ids" {
+  value = aws_db_subnet_group.db_subnet_group.subnet_ids
+}
+
+output "db_proxy_sg_id" {
+  value = aws_security_group.db_proxy_sg.id
 }
