@@ -4,7 +4,7 @@ resource "aws_rds_cluster" "main" {
   availability_zones            = ["ap-southeast-1a", "ap-southeast-1b"]
   database_name                 = "user_db" # (optional) name of automatically created database on cluster creation
   manage_master_user_password   = true
-  master_username               = "test"
+  master_username               = "postgres"
   master_user_secret_kms_key_id = var.aurora_kms_key_id
   skip_final_snapshot           = false
   final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"

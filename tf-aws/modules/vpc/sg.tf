@@ -7,8 +7,8 @@ resource "aws_security_group" "rds" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.lambda_sg.id, aws_security_group.db_proxy_sg.id]
-    description     = "Allow access from lambda and db proxy"
+    security_groups = [aws_security_group.lambda_sg.id, aws_security_group.db_proxy_sg.id, var.eks_cluster_sg_id, aws_security_group.bastion.id]
+    description     = "Allow access from lambda and db proxy and bastion"
   }
 
   egress {
@@ -25,20 +25,6 @@ resource "aws_security_group" "bastion" {
   vpc_id      = aws_vpc.vpc.id
 }
 
-# resource "aws_security_group" "lambda" {
-#   name        = "lambda-sg"
-#   description = "Allow lambda to function"
-#   vpc_id      = aws_vpc.vpc.id
-# }
-
-# # Allow lambda access to RDS
-# resource "aws_vpc_security_group_ingress_rule" "rds_to_lambda_ingress" {
-#   security_group_id            = aws_security_group.lambda.id
-#   referenced_security_group_id = aws_security_group.rds.id
-#   ip_protocol                  = "tcp"
-#   from_port                    = 5432
-#   to_port                      = 5432
-# }
 
 # Allow bastion access to RDS
 resource "aws_vpc_security_group_ingress_rule" "rds_to_bastion_ingress" {
@@ -57,29 +43,6 @@ resource "aws_vpc_security_group_ingress_rule" "bastion_ingress" {
   from_port         = 22
   to_port           = 22
 }
-
-# resource "aws_vpc_security_group_egress_rule" "lambda_to_rds_egress" {
-#   security_group_id            = aws_security_group.lambda.id
-#   referenced_security_group_id = aws_security_group.rds.id
-#   ip_protocol                  = "tcp"
-#   from_port                    = 5432
-#   to_port                      = 5432
-# }
-
-# resource "aws_vpc_security_group_egress_rule" "lambda_to_internet_egress" {
-#   security_group_id            = aws_security_group.lambda.id
-#   referenced_security_group_id = aws_security_group.rds.id
-#   ip_protocol                  = "tcp"
-#   from_port                    = 443
-#   to_port                      = 443
-# }
-
-# Allow all outbound from RDS
-# resource "aws_vpc_security_group_egress_rule" "rds_egress" {
-#   security_group_id = aws_security_group.rds.id
-#   cidr_ipv4         = "0.0.0.0/0"
-#   ip_protocol       = "-1"
-# }
 
 # Allow all outbound from bastion
 resource "aws_vpc_security_group_egress_rule" "bastion_egress" {
@@ -127,7 +90,7 @@ resource "aws_security_group" "db_proxy_sg" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.lambda_sg.id]
+    security_groups = [aws_security_group.lambda_sg.id, var.eks_cluster_sg_id]
     description     = "Allow access from lambda"
   }
 
@@ -168,6 +131,24 @@ resource "aws_security_group" "vpc_endpoint_security_group" {
     to_port         = 0
     protocol        = -1
     security_groups = [aws_security_group.lambda_sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "docdb_sg" {
+  vpc_id = aws_vpc.vpc.id
+  name = "documentdb to be accessed by eks"
+
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = -1
+    security_groups = [var.eks_cluster_sg_id]
   }
   egress {
     from_port   = 0

@@ -61,3 +61,7 @@ output "db_subnet_group_subnet_ids" {
 output "db_proxy_sg_id" {
   value = aws_security_group.db_proxy_sg.id
 }
+
+output "docdb_sg_id" {
+  value = aws_security_group.docdb_sg.id
+}
