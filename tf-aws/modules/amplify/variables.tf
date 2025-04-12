@@ -19,7 +19,7 @@ variable "region" {
 variable "branch_name" {
   type        = string
   description = "aws amplify app repo branch name"
-  default     = "main"
+  default     = "prod"
 }
 
 variable "domain_name" {
