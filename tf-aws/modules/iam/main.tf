@@ -572,7 +572,8 @@ data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy" {
       "sqs:ReceiveMessage"
     ]
     resources = [
-      var.mt_queue_arn
+      var.mt_queue_arn,
+      var.mt_dlq_queue_arn
     ]
   }
 }
