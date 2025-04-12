@@ -94,7 +94,7 @@ data "aws_vpc_endpoint" "vpce_tf" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "default" {
-  bucket = aws_s3_bucket.sftp_bucket
+  bucket = aws_s3_bucket.sftp_bucket.id
 
   rule {
     id = "Allow small object transitions and monetary"
