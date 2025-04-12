@@ -17,7 +17,7 @@ resource "aws_networkfirewall_firewall" "networkfirewall" {
 }
 
 resource "aws_networkfirewall_firewall_policy" "networkfirewall_policy" {
-  name        = "scrooge-bank"
+  name        = "scrooge-bank-stateful"
   description = "only from scrooge bank"
 
   firewall_policy {
@@ -26,6 +26,19 @@ resource "aws_networkfirewall_firewall_policy" "networkfirewall_policy" {
 
     stateful_rule_group_reference {
       resource_arn = aws_networkfirewall_rule_group.web_access.arn
+    }
+
+    stateful_rule_group_reference {
+      resource_arn = "arn:aws:network-firewall:ap-southeast-1:aws-managed:stateful-rulegroup/AbusedLegitBotNetCommandAndControlDomainsActionOrder"
+    }
+    stateful_rule_group_reference {
+      resource_arn = "arn:aws:network-firewall:ap-southeast-1:aws-managed:stateful-rulegroup/AbusedLegitMalwareDomainsActionOrder"
+    }
+    stateful_rule_group_reference {
+      resource_arn = "arn:aws:network-firewall:ap-southeast-1:aws-managed:stateful-rulegroup/MalwareDomainsActionOrder"
+    }
+    stateful_rule_group_reference {
+      resource_arn = "arn:aws:network-firewall:ap-southeast-1:aws-managed:stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder"
     }
   }
 }
