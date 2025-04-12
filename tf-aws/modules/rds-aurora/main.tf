@@ -8,7 +8,7 @@ resource "aws_rds_cluster" "main" {
   master_user_secret_kms_key_id = var.aurora_kms_key_id
   skip_final_snapshot           = false
   final_snapshot_identifier     = "main-rds-cluster-${replace(timestamp(), ":", "-")}"
-  snapshot_identifier           = "scrooge-bank-prod-v1"
+  snapshot_identifier           = "scrooge-bank-prod-v2"
   backup_retention_period       = 5
   preferred_backup_window       = "07:00-09:00"
   # apply_immediately      = true
