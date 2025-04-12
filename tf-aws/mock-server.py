@@ -8,6 +8,7 @@ import json
 import io
 import datetime
 import uuid
+import csv
 
 def get_secret():
 
@@ -87,15 +88,34 @@ def handler(event, context):
             s3.download_file(s3_bucket_name, file_key, tmp_file_path)
             print(f"Downloaded file from S3 to temporary location: {tmp_file_path}")
 
-        # Modify uuid
-        with open(tmp_file_path, 'r') as f:
-            data = json.loads(f.read())
+        # get file format
+        file_extension = file_key.split(".")[-1].lower()
 
-        for mt in data:
-            mt['transaction_id'] = str(uuid.uuid4()) # unique mt
+    # Modify uuid
+        if file_extension == 'json':
+            with open(tmp_file_path, 'r') as f:
+                data = json.loads(f.read())
 
-        with open(tmp_file_path, 'w') as f:
-            json.dump(data, f, indent=2)
+            for mt in data:
+                mt['transaction_id'] = str(uuid.uuid4()) # unique mt
+
+            with open(tmp_file_path, 'w') as f:
+                json.dump(data, f, indent=2)
+        else:
+            rows = []
+            with open(tmp_file_path, 'r', newline = '') as f:
+                print("changing uuids...")
+                reader = csv.DictReader(f)
+                fieldnames = reader.fieldnames
+                for row in reader:
+                    row['transaction_id'] = str(uuid.uuid4())
+                    rows.append(row)
+            
+            with open (tmp_file_path, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+                print("csv file updated with new uuids")
 
         try:
             pkey_str = get_secret()
@@ -114,7 +134,7 @@ def handler(event, context):
             sftp = ssh.open_sftp()
 
             # Upload the file to SFTP server
-            put_path = f"/file_{int(datetime.datetime.now().timestamp()*1000)}.json"
+            put_path = f"/file_{int(datetime.datetime.now().timestamp()*1000)}.{file_extension}"
             sftp.put(tmp_file_path, put_path)
             
         except Exception as sftp_error:

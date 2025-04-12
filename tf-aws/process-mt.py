@@ -7,7 +7,11 @@ from psycopg import sql
 from datetime import datetime
 import os
 import urllib.parse
+import csv
 
+"""
+this code is a hard r but wtv
+"""
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -38,7 +42,19 @@ def get_secret():
     # Your code goes here.
     return secret
 
-def _process_file_content(content):
+def _process_file_content_csv(content, headers):
+    """ Custom logic for processing csv file content """
+    print("processing file content...")
+    rows = []
+    for row in content:
+        row_dict = dict(zip(headers, row))
+        timestamp_str = row_dict['timestamp']
+        row_dict['timestamp'] = datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M:%SZ")
+        rows.append(row_dict)
+    return rows
+
+
+def _process_file_content_json(content):
     """ Custom logic for processing json file content """
     print("processing file content...")
     content = json.loads(content)
@@ -51,7 +67,7 @@ def _write_to_db(rows, db_config):
     """ Insert data into the PostgreSQL RDS database """
     connection_params = {
         'host': os.environ['PROXY_HOST'],
-        'dbname': os.environ['DB_NAME'],
+        'dbname': 'client_db',
         'user': db_config['username'],
         'password': db_config['password'],
         'port': os.environ['DB_PORT']
@@ -62,22 +78,9 @@ def _write_to_db(rows, db_config):
             with conn.cursor() as cursor:
                 logging.info("Connected to database")
 
-                create_query = sql.SQL("""
-                   CREATE TABLE IF NOT EXISTS public.transaction (
-                        transaction_id UUID PRIMARY KEY,
-                        client_id UUID NOT NULL,
-                        account_id UUID NOT NULL,
-                        amount NUMERIC(15, 2) NOT NULL,
-                        status VARCHAR(50) NOT NULL,
-                        timestamp TIMESTAMP NOT NULL
-                    );
-                """)
-                cursor.execute(create_query)
-                logging.info("Created transaction table if not exists")
-
                 try:
                     insert_query = sql.SQL("""
-                        INSERT INTO public.transaction (transaction_id, client_id, account_id, amount, status, timestamp)
+                        INSERT INTO public.transactions (transaction_id, client_id, account_id, amount, status, timestamp)
                         VALUES (%s, %s, %s, %s, %s, %s)
                     """)
 
@@ -132,20 +135,32 @@ def handler(event, context):
     
     try:
         response = s3.get_object(Bucket=bucket, Key = key)
-        file_content = response["Body"].read().decode('utf-8')
-        print("read file from S3!")
-
     except Exception as e:
         print(f"S3 error: {e}")
         return {"statusCode": 500, "body": str(e)}
+      
+    db_config = json.loads(get_secret())
+    print("Got secret!!!!")
 
     try:
-        rows = _process_file_content(file_content)
+        file_extension = key.split(".")[-1].lower()
 
-        db_config = json.loads(get_secret())
-        print("Got secret!!!!")
+        if 'csv' in file_extension:
+            file_content = response["Body"].read().decode('utf-8').splitlines()
+            rows = csv.reader(file_content)
+            headers = next(rows)
+            print('headers: %s' %(headers))
+            data = _process_file_content_csv(rows, headers)
 
-        _write_to_db(rows, db_config)
+            _write_to_db(data, db_config)
+        
+        elif 'json' in file_extension:
+            file_content = response["Body"].read().decode('utf-8')
+            rows = _process_file_content_json(file_content)
+            _write_to_db(rows, db_config)
+
+        else:
+            print("huh")
 
     except Exception as e:
         print(f"Lambda error: {e}")
