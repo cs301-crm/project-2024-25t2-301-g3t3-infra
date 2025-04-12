@@ -15,6 +15,7 @@ resource "aws_sqs_queue" "mt_queue" {
 
 resource "aws_sqs_queue" "mt_queue_deadletter" {
   name = "sftp-s3-event-notification-deadletter-queue"
+  policy = data.aws_iam_policy_document.queue.json
 }
 
 resource "aws_sqs_queue_redrive_allow_policy" "mt_redrive_allow_policy" {
