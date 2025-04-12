@@ -415,9 +415,9 @@ data "aws_iam_policy_document" "bastion_rds_policy" {
 }
 
 resource "aws_iam_policy" "bastion_rds_policy" {
-  name = "bastion_rds_policy"
+  name        = "bastion_rds_policy"
   description = "policy for bastion to reach rds"
-  policy = data.aws_iam_policy_document.bastion_rds_policy.json
+  policy      = data.aws_iam_policy_document.bastion_rds_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "bastion_rds_policy_attachment" {

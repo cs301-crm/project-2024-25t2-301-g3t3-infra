@@ -142,15 +142,15 @@ resource "aws_security_group" "vpc_endpoint_security_group" {
 
 resource "aws_security_group" "docdb_sg" {
   vpc_id = aws_vpc.vpc.id
-  name = "documentdb to be accessed by eks"
+  name   = "documentdb to be accessed by eks"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_docdb" {
-    security_group_id = aws_security_group.docdb_sg.id
+  security_group_id            = aws_security_group.docdb_sg.id
   referenced_security_group_id = var.eks_cluster_sg_id
-    from_port       = 27017
-    to_port         = 27017
-    ip_protocol        = "tcp"
+  from_port                    = 27017
+  to_port                      = 27017
+  ip_protocol                  = "tcp"
 }
 
 # Allow all outbound from bastion
