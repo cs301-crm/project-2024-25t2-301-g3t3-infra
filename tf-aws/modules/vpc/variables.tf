@@ -13,3 +13,6 @@ variable "vpc_mock_server_cidr_block" {
   type        = string
   default     = "10.1.0.0/16"
 }
+
+variable "eks_cluster_sg_id" {
+}

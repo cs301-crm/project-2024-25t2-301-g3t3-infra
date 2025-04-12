@@ -3,6 +3,7 @@ module "vpc" {
   vpc_cidr                   = "10.0.0.0/16"
   pc_mt_id                   = module.mock-server.pc_mt_id
   vpc_mock_server_cidr_block = module.mock-server.vpc_mock_server_cidr_block
+  eks_cluster_sg_id          = module.eks.eks_cluster_sg_id
 }
 
 module "iam" {
@@ -126,4 +127,11 @@ module "mock-server" {
 module "amplify" {
   source                   = "./modules/amplify"
   amplify_logging_role_arn = module.iam.amplify_logging_role_arn
+}
+
+module "docdb" {
+  source               = "./modules/docdb"
+  vpc_azs              = module.vpc.azs
+  db_subnet_group_name = module.vpc.db_subnet_group_name
+  docdb_sg_id          = module.vpc.docdb_sg_id
 }
