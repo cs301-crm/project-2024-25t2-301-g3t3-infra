@@ -102,7 +102,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "default" {
     filter {
       and {
         object_size_greater_than = 1
-        prefix = "monetary_transcations/"
+        prefix                   = "monetary_transcations/"
       }
     }
 
@@ -124,7 +124,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "default" {
     }
 
     expiration {
-      days          = 1825 # delete after 5yrs
+      days = 1825 # delete after 5yrs
     }
   }
 }
