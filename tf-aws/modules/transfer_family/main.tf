@@ -92,3 +92,39 @@ data "aws_vpc_endpoint" "vpce_tf" {
     values = ["${aws_transfer_server.sftp_server.endpoint_details[0].vpc_endpoint_id}"]
   }
 }
+
+resource "aws_s3_bucket_lifecycle_configuration" "default" {
+  bucket = aws_s3_bucket.sftp_bucket
+
+  rule {
+    id = "Allow small object transitions and monetary"
+
+    filter {
+      and {
+        object_size_greater_than = 1
+        prefix = "monetary_transcations/"
+      }
+    }
+
+    status = "Enabled"
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 180
+      storage_class = "GLACIER_IR"
+    }
+
+    transition {
+      days          = 365
+      storage_class = "DEEP_ARCHIVE"
+    }
+
+    expiration {
+      days          = 1825 # delete after 5yrs
+    }
+  }
+}
