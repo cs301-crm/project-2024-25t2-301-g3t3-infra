@@ -4,31 +4,12 @@ variable "bastion_iam_instance_profile" {}
 variable "msk_cluster_bootstrap_brokers" {}
 
 resource "aws_instance" "bastion" {
-  ami                    = "ami-0b5a4445ada4a59b1" # Amazon Linux 2 AMI
+  ami                    = "ami-0b83b6b68fae94127" # bastion host AMI
   instance_type          = "t2.micro"
   subnet_id              = var.public_subnet_id
   vpc_security_group_ids = [var.bastion_sg]
   key_name               = "cs301 bastion"
   iam_instance_profile   = var.bastion_iam_instance_profile
-
-  user_data = <<-EOL
-  #!/bin/bash -xe
-
-  sudo yum install -y postgresql16 postgresql16-server
-  sudo /usr/bin/postgresql-setup --initdb
-  sudo systemctl start postgresql
-  sudo systemctl enable postgresql
-
-  # Install Kafka client tools
-  sudo yum install -y java-17-amazon-corretto 
-  wget https://dlcdn.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz
-  tar -xzf kafka_2.13-4.0.0.tgz
-  rm kafka_2.13-4.0.0.tgz
-  sudo mv kafka_2.13-4.0.0 /opt/kafka
-  sudo chmod -R 755 /opt/kafka
-  export PATH=$PATH:/opt/kafka/bin
-  source ~/.bashrc
-  EOL
 
   tags = {
     Name = "bastion-host"
@@ -49,14 +30,14 @@ resource "null_resource" "create_topic_script" {
 
     # Verify broker connection
     echo "verifying broker connectivity..."
-    for i in {1..5}; do
-      if echo "ls" | timeout 5 kafka-topics.sh --bootstrap-server $BOOTSTRAP_BROKERS --list; then
+    for i in {1..8}; do
+      if echo "ls" | timeout 10 kafka-topics.sh --bootstrap-server $BOOTSTRAP_BROKERS --list; then
         echo "Successfully connected to Kafka brokers!"
         break
       fi
       
-      if [ $i -eq 5 ]; then
-        echo "Failed to connect to Kafka brokers after 5 attempts"
+      if [ $i -eq 8 ]; then
+        echo "Failed to connect to Kafka brokers after 8 attempts"
         exit 1
       fi
       

@@ -3,6 +3,7 @@ module "vpc" {
   vpc_cidr                   = "10.0.0.0/16"
   pc_mt_id                   = module.mock-server.pc_mt_id
   vpc_mock_server_cidr_block = module.mock-server.vpc_mock_server_cidr_block
+  eks_cluster_sg_id          = module.eks.eks_cluster_sg_id
 }
 
 module "iam" {
@@ -14,6 +15,7 @@ module "iam" {
   eks_cluster_name       = module.eks.eks_cluster_name
   msk_cluster_arn        = module.msk.msk_cluster_arn
   mt_queue_arn           = module.sqs.mt_queue_arn
+  mt_dlq_queue_arn       = module.sqs.mt_dlq_queue_arn
 }
 
 module "kms" {
@@ -91,6 +93,7 @@ module "lambda_process_monetary_transactions" {
   lambda_sg_id                                  = module.vpc.lambda_sg_id
   rds_cluster_secret_arn                        = module.rds-aurora.rds_cluster_secret_arn
   mt_queue_arn                                  = module.sqs.mt_queue_arn
+  mt_dlq_queue_arn                              = module.sqs.mt_dlq_queue_arn
   db_proxy_lambdas_endpoint                     = module.rds-aurora.db_proxy_lambdas_endpoint
 }
 
@@ -124,4 +127,11 @@ module "mock-server" {
 module "amplify" {
   source                   = "./modules/amplify"
   amplify_logging_role_arn = module.iam.amplify_logging_role_arn
+}
+
+module "docdb" {
+  source               = "./modules/docdb"
+  vpc_azs              = module.vpc.azs
+  db_subnet_group_name = module.vpc.db_subnet_group_name
+  docdb_sg_id          = module.vpc.docdb_sg_id
 }

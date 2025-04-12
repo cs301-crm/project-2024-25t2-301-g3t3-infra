@@ -382,6 +382,48 @@ resource "aws_iam_instance_profile" "bastion_profile" {
   role = aws_iam_role.bastion_role.name
 }
 
+data "aws_iam_policy_document" "bastion_rds_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "rds-db:connect"
+    ]
+    resources = [
+      var.rds_cluster_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      var.aurora_kms_key_arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      var.rds_cluster_secret_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "bastion_rds_policy" {
+  name        = "bastion_rds_policy"
+  description = "policy for bastion to reach rds"
+  policy      = data.aws_iam_policy_document.bastion_rds_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "bastion_rds_policy_attachment" {
+  role       = aws_iam_role.bastion_role.name
+  policy_arn = aws_iam_policy.bastion_rds_policy.arn
+}
 
 # Transfer Family roles
 resource "aws_iam_role" "transfer_logging_role" {
@@ -572,7 +614,8 @@ data "aws_iam_policy_document" "process_monetary_transactions_lambda_policy" {
       "sqs:ReceiveMessage"
     ]
     resources = [
-      var.mt_queue_arn
+      var.mt_queue_arn,
+      var.mt_dlq_queue_arn
     ]
   }
 }
