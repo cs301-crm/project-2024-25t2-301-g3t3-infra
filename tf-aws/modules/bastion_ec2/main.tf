@@ -50,32 +50,33 @@ resource "null_resource" "create_topic_script" {
     echo "Creating topic: logs"
     kafka-topics.sh --create --topic logs --partitions 100 --replication-factor 3 \
       --bootstrap-server $BOOTSTRAP_BROKERS \
-      --config segment.ms=20000 \
-      --config cleanup.policy=compact
+      --config cleanup.policy=delete \
+      --config retention.ms=900000  # 15 minutes
+
     
     echo "Creating topic: otps"
     kafka-topics.sh --create --topic otps --partitions 100 --replication-factor 3 \
       --bootstrap-server $BOOTSTRAP_BROKERS \
-      --config segment.ms=20000 \
-      --config cleanup.policy=compact
+      --config cleanup.policy=delete \
+      --config retention.ms=300000  # 5 minutes
+    
+  echo "Creating topic: a2c"
+  kafka-topics.sh --create --topic a2c --partitions 100 --replication-factor 3 \
+    --bootstrap-server $BOOTSTRAP_BROKERS \
+    --config cleanup.policy=delete \
+    --config retention.ms=86400000  # 1 day
     
     echo "Creating topic: u2c"
     kafka-topics.sh --create --topic u2c --partitions 100 --replication-factor 3 \
       --bootstrap-server $BOOTSTRAP_BROKERS \
-      --config segment.ms=20000 \
-      --config cleanup.policy=compact
-    
-    echo "Creating topic: a2c"
-    kafka-topics.sh --create --topic a2c --partitions 100 --replication-factor 3 \
-      --bootstrap-server $BOOTSTRAP_BROKERS \
-      --config segment.ms=20000 \
-      --config cleanup.policy=compact
+      --config cleanup.policy=delete \
+      --config retention.ms=86400000  # 1 day
 
     echo "Creating topic: c2c"
     kafka-topics.sh --create --topic c2c --partitions 100 --replication-factor 3 \
       --bootstrap-server $BOOTSTRAP_BROKERS \
-      --config segment.ms=20000 \
-      --config cleanup.policy=compact
+      --config cleanup.policy=delete \
+      --config retention.ms=86400000  # 1 day
 
     echo "Listing all topics:"
     kafka-topics.sh --bootstrap-server $BOOTSTRAP_BROKERS --list
