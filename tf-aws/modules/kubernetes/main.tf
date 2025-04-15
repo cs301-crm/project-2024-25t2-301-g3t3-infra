@@ -140,3 +140,19 @@ resource "kubernetes_role_binding" "prometheus_k8s" {
     namespace = "monitoring"
   }
 }
+
+resource "kubernetes_storage_class_v1" "efs" {
+  metadata {
+    name = "efs"
+  }
+
+  storage_provisioner = "efs.csi.aws.com"
+
+  parameters = {
+    provisioningMode = "efs-ap"
+    fileSystemId = var.efs_file_system_id
+    directoryPerms = "700"
+  }
+
+  mount_options = ["iam"]
+}
